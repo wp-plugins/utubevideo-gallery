@@ -60,7 +60,7 @@ No, only Youtube videos are supported, hence the name of the plugin.
 
 == Changelog ==
 
-= 1.0.1 =
+= 1.1 =
 * Fixed major script inclusion bug and prevented some styles from being overidden
 
 = 1.0 =
