@@ -1,0 +1,121 @@
+/*FRONTEND CSS*/
+
+.utBreadcrumbs{
+	margin-bottom: 10px;
+}
+
+.utBreadcrumbs a{
+	font-size: 13px!important;
+	text-decoration: none!important;
+}
+
+.utBreadcrumbs a:hover{
+	text-decoration: underline;
+}
+
+.utBreadcrumbs span{
+	font-size: 13px;
+}
+
+.utVideoContainer{
+	width: 100%; 
+	margin: 0 auto;
+}
+
+.utVideoContainer .utThumb{
+	text-align: center;
+	display: inline-block; 
+	width: 150px; 
+	margin: 10px 20px;
+}
+
+.utVideoContainer .utThumb img:hover{
+	filter:alpha(opacity=70);
+    -moz-opacity:.70;
+    opacity: .70;
+}
+
+.utVideoContainer .utThumb img{
+	box-shadow: 5px 5px 20px #888;
+	-moz-box-shadow: 5px 5px 20px #888;
+	-webkit-box-shadow: 5px 5px 20px #888;
+	-webkit-transition: opacity .2s linear;
+	-moz-transition: opacity .2s linear;
+	transition: opacity .2s linear;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+.utVideoContainer .utThumb span{
+	font-size: 13px;
+}
+
+/*ADMIN CSS*/
+
+.utFormBox{
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 15px;
+}
+
+.utTopformBox{
+	border-top: 1px solid #ccc;
+	margin-top: 15px;
+}
+
+.utFormBox label{
+	width: 220px;
+	display: inline-block;
+}
+
+.utFormBox .utHint{
+	display: block;
+	margin-left: 225px;
+	font-style: italic; 
+	margin-top: 2px;
+}
+
+.utFormBox .utCancel{
+	color: #ff0000;
+	text-decoration: underline;
+	margin-left: 15px;
+	padding: 1px 2px;
+}
+
+.utFormBox .utCancel:hover{
+	background-color: #ff0000;
+	color: #fff;
+}
+
+.utFormBox select, .utFormBox input[type='text']{
+	width: 225px;
+}
+
+.utBlock{
+	display: block;
+}
+
+.utTable{
+	line-height: 1.6em;
+}
+
+.utPrevThumb{
+	margin: 5px; 
+	border-radius: 3px;
+}
+
+.linkButton{
+	border: 0; 
+	font-size: 12px; 
+	background-color: transparent; 
+	padding: 0; 
+	margin: 0;
+	color: #21759b;
+	display: block;
+	line-height: 1.6em;
+}
+
+.linkButton:hover{
+	color: #d54e21;
+	cursor: pointer;
+}
