@@ -4,7 +4,7 @@
 Plugin Name: uTube Video Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create youtube video galleries right in your wordpress site.
-Version: 1.1
+Version: 1.1.1
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -79,6 +79,12 @@ if(is_admin())
 		
 		update_option('utubevideo_main_opts', $opts);
 		
+		
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];
+		
+		wp_mkdir_p($dir . '/utubevideo-cache');
+		
 	}
 	
 	//save main options//
@@ -125,6 +131,9 @@ if(is_admin())
 		global $wpdb;
 		$key = sanitize_text_field($_POST['key']);
 		
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];
+		
 		$rows = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $key, ARRAY_A);	
 		
 		foreach($rows as $value)
@@ -135,7 +144,7 @@ if(is_admin())
 			foreach($data as $nvalue)
 			{
 			
-				unlink(plugin_dir_path(__FILE__) . 'cache/' . $nvalue['VID_URL']  . '.jpg');
+				unlink($dir . '/utubevideo-cache/' . $nvalue['VID_URL']  . '.jpg');
 			
 			}
 	
@@ -173,8 +182,11 @@ if(is_admin())
 		$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
 		
 		$image = wp_get_image_editor($yurl); 
+		
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];
 	
-		$spath = plugin_dir_path(__FILE__) . 'cache/' . $v . '.jpg';
+		$spath = $dir . '/utubevideo-cache/' . $v . '.jpg';
 		
 		if(!is_wp_error($image))
 		{
@@ -226,9 +238,12 @@ if(is_admin())
 		
 		$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
 		
-		$image = wp_get_image_editor($yurl); 
+		$image = wp_get_image_editor($yurl);
 
-		$spath = plugin_dir_path(__FILE__) . 'cache/' . $v . '.jpg';
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];		
+
+		$spath = $dir . '/utubevideo-cache/' . $v . '.jpg';
 		
 		if(!is_wp_error($image))
 		{
@@ -280,13 +295,15 @@ if(is_admin())
 	
 		global $wpdb;
 		$key = sanitize_text_field($_POST['key']);
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];
 		
 		$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key, ARRAY_A);
 		
 		foreach($data as $value)
 		{
 		
-			unlink(plugin_dir_path(__FILE__) . 'cache/' . $value['VID_URL']  . '.jpg');
+			unlink($dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg');
 		
 		}
 				
@@ -343,10 +360,12 @@ if(is_admin())
 		
 		global $wpdb;
 		$key = sanitize_text_field($_POST['key']);
+		$dir = wp_upload_dir();
+		$dir = $dir['basedir'];
 		
 		$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
 		
-		unlink(plugin_dir_path(__FILE__) . 'cache/' . $data[0]['VID_URL']  . '.jpg');
+		unlink($dir . '/utubevideo-cache/' . $data[0]['VID_URL']  . '.jpg');
 		
 		if($wpdb->query( 
 			$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_video WHERE VID_ID = %d", $key)
@@ -434,6 +453,8 @@ if(is_admin())
 			
 				global $wpdb;
 				$key = sanitize_text_field($_POST['key']);
+				$dir = wp_upload_dir();
+				$dir = $dir['baseurl'];
 
 				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
 				
@@ -443,7 +464,7 @@ if(is_admin())
 					<form method="post">  
 						<h3><?php _e('Edit Video Album'); ?></h3>
 						<p>
-							<img src="<?php echo plugin_dir_url(__FILE__) . 'cache/' . $rows[0]['ALB_THUMB'] . '.jpg';?>" class="utPrevThumb"/>
+							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['ALB_THUMB'] . '.jpg';?>" class="utPrevThumb"/>
 						</p>
 						<p>
 							<label><?php _e('Album Name: '); ?></label>
@@ -499,6 +520,8 @@ if(is_admin())
 			
 				global $wpdb;
 				$key = sanitize_text_field($_POST['key']);
+				$dir = wp_upload_dir();
+				$dir = $dir['baseurl'];
 						
 				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
 				
@@ -508,7 +531,7 @@ if(is_admin())
 					<form method="post">  
 						<h3><?php _e('Edit Video'); ?></h3>
 						<p>
-							<img src="<?php echo plugin_dir_url(__FILE__) . 'cache/' . $rows[0]['VID_URL'] . '.jpg';?>" class="utPrevThumb"/>
+							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['VID_URL'] . '.jpg';?>" class="utPrevThumb"/>
 						</p>
 						<p>
 							<label><?php _e('Video Name: '); ?></label>
@@ -542,6 +565,8 @@ if(is_admin())
 				
 					global $wpdb;
 					$id = $_GET['id'];
+					$dir = wp_upload_dir();
+					$dir = $dir['baseurl'];
 							
 					$data = $wpdb->get_results('SELECT DATA_NAME FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = "' . $id . '"', ARRAY_A);
 			
@@ -588,7 +613,7 @@ if(is_admin())
 								?>
 							
 								<tr>
-									<td><img src="<?php echo plugin_dir_url(__FILE__) . 'cache/' . $value['ALB_THUMB'] . '.jpg';?>" class="utPrevThumb"/></td>
+									<td><img src="<?php echo $dir . '/utubevideo-cache/' . $value['ALB_THUMB'] . '.jpg';?>" class="utPrevThumb"/></td>
 									<td><?php echo $value['ALB_NAME']; ?></td>
 									<td><?php echo date('M j, Y @ g:ia', $value['ALB_UPDATEDATE']); ?></td>
 									<td>
@@ -639,6 +664,8 @@ if(is_admin())
 
 					global $wpdb;
 					$id = $_GET['id'];
+					$dir = wp_upload_dir();
+					$dir = $dir['baseurl'];
 							
 					$data = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = "' . $id . '"', ARRAY_A);
 			
@@ -685,7 +712,7 @@ if(is_admin())
 								?>
 							
 								<tr>
-									<td><img src="<?php echo plugin_dir_url(__FILE__) . 'cache/' . $value['VID_URL'] . '.jpg';?>" class="utPrevThumb"/></td>
+									<td><img src="<?php echo $dir . '/utubevideo-cache/' . $value['VID_URL'] . '.jpg';?>" class="utPrevThumb"/></td>
 									<td><?php echo stripslashes($value['VID_NAME']); ?></td>
 									<td><?php echo date('M j, Y @ g:ia', $value['VID_UPDATEDATE']); ?></td>
 									<td>
@@ -856,6 +883,8 @@ else
 	
 		extract($atts);
 		global $wpdb;
+		$dir = wp_upload_dir();
+		$dir = $dir['baseurl'];
 		
 		$content = '<div class="utVideoContainer">';
 		
@@ -876,7 +905,7 @@ else
 				foreach($rows as $value)
 				{
 				
-					$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . plugin_dir_url(__FILE__) . 'cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
+					$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
 					
 				}
 			
@@ -900,7 +929,7 @@ else
 				foreach($rows as $value)
 				{
 			
-					$content .= '<div class="utThumb"><a href="?aid=' . $value['ALB_ID'] . '"><img src="' . plugin_dir_url(__FILE__) . 'cache/' . $value['ALB_THUMB']  . '.jpg"/></a><span>' . $value['ALB_NAME'] . '</span></div>';
+					$content .= '<div class="utThumb"><a href="?aid=' . $value['ALB_ID'] . '"><img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/></a><span>' . $value['ALB_NAME'] . '</span></div>';
 			
 				}
 		
