@@ -969,9 +969,10 @@ else
 		{
 		
 
-			wp_register_script('utubevideo_fancybox_script', plugins_url('utubevideo/fancybox/jquery.fancybox-1.3.4.pack.js'));
-			wp_register_style('utubevideo_fancybox_style', plugins_url('utubevideo/fancybox/jquery.fancybox-1.3.4.css'));
+			wp_register_script('utubevideo_fancybox_script', plugins_url('fancybox/jquery.fancybox-1.3.4.pack.js', __FILE__));
+			wp_register_style('utubevideo_fancybox_style', plugins_url('fancybox/jquery.fancybox-1.3.4.css', __FILE__));
 
+			wp_enqueue_script('jquery');
 			wp_enqueue_script('utubevideo_fancybox_script');
 			wp_enqueue_style('utubevideo_fancybox_style');
 
@@ -991,7 +992,7 @@ else
 function utubevideo_style_setup()
 {
 
-	wp_register_style('utubevideo_style', plugins_url('utubevideo/style.css'));
+	wp_register_style('utubevideo_style', plugins_url('style.css', __FILE__));
 	wp_enqueue_style('utubevideo_style');
 
 }

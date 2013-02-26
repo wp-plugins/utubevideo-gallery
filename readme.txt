@@ -4,7 +4,7 @@ Donate link: http://www.codeclouds.net/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
 Tested up to: 3.5.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,9 @@ No, only Youtube videos are supported, hence the name of the plugin.
 3. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.0.1 =
+* Fixed major script inclusion bug and prevented some styles from being overidden
 
 = 1.0 =
 * Inital release of uTubeVideo Gallery
