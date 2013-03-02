@@ -1,10 +1,10 @@
 <?php 
 
 /*
-Plugin Name: uTube Video Gallery	
+Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
-Description: This plugin allows you to create youtube video galleries right in your wordpress site.
-Version: 1.1.1
+Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
+Version: 1.2
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -26,6 +26,7 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+//if at dashboard//
 if(is_admin())
 {
 
@@ -33,7 +34,7 @@ if(is_admin())
 	function utubevideo_activate()
 	{
 
-		//create database tables//
+		//create database tables for plugin//
 		global $wpdb;
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		
@@ -74,20 +75,25 @@ if(is_admin())
 		
 		$dft['version'] = '1.0';
 		$dft['fancyboxInc'] = 'no';
+		$dft['playerWidth'] = 950;
+		$dft['playerHeight'] = 537;
 		
 		$opts = $main + $dft;
 		
 		update_option('utubevideo_main_opts', $opts);
 		
-		
+		//create photo cache directory if needed//
 		$dir = wp_upload_dir();
 		$dir = $dir['basedir'];
 		
 		wp_mkdir_p($dir . '/utubevideo-cache');
 		
+		//copy 'missing.jpg' into cache directory//
+		copy(plugins_url('missing.jpg', __FILE__), $dir . '/utubevideo-cache/missing.jpg'); 
+		
 	}
 	
-	//save main options//
+	//save main options script//
 	if(isset($_POST['utSaveOpts']))
 	{
 		
@@ -97,14 +103,29 @@ if(is_admin())
 			$opts['fancyboxInc'] = 'yes';
 		else
 			$opts['fancyboxInc'] = 'no';
-				
+			
+		if(!empty($_POST['playerWidth']) && !empty($_POST['playerHeight']))
+		{
+		
+			$opts['playerWidth'] = sanitize_text_field($_POST['playerWidth']);
+			$opts['playerHeight'] = sanitize_text_field($_POST['playerHeight']);
+			
+		}
+		else
+		{
+		
+			$opts['playerWidth'] = 950;
+			$opts['playerHeight'] = 537;
+			
+		}
+
 		if(update_option('utubevideo_main_opts', $opts))
 			echo '<div class="updated fade"><p>Settings saved</p></div>'; 
 		else
 			echo '<div class="error fade"><p>Oops... something went wrong or there were no changes needed</p></div>';
 				
 	}
-	//save new dataset or shortcode//
+	//save new gallery script//
 	elseif(isset($_POST['saveDataset']))
 	{
 	
@@ -119,12 +140,12 @@ if(is_admin())
 				'DATA_UPDATEDATE' => $time
 			)
 		))
-			echo '<div class="updated fade"><p>Dataset created</p></div>';
+			echo '<div class="updated fade"><p>Gallery created</p></div>';
 		else
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
 
 	}
-	//delete a dataset//
+	//delete a gallery script//
 	elseif(isset($_POST['delSet']))
 	{
 	
@@ -134,8 +155,10 @@ if(is_admin())
 		$dir = wp_upload_dir();
 		$dir = $dir['basedir'];
 		
+		//get albums within gallery//
 		$rows = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $key, ARRAY_A);	
 		
+		//for each album get videos and delete thumbnails and references of videos / album//
 		foreach($rows as $value)
 		{
 		
@@ -172,59 +195,25 @@ if(is_admin())
 	
 		$dataid = sanitize_text_field($_GET['id']);
 		$alname = htmlentities($_POST['alname'], ENT_QUOTES);
-		$url = sanitize_text_field($_POST['url']);
-		$vidname = htmlentities($_POST['vidname'], ENT_QUOTES);
 		$time = current_time('timestamp');
 		
-		$url = parse_url($url);
-		parse_str($url['query']);
-		
-		$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
-		
-		$image = wp_get_image_editor($yurl); 
-		
-		$dir = wp_upload_dir();
-		$dir = $dir['basedir'];
-	
-		$spath = $dir . '/utubevideo-cache/' . $v . '.jpg';
-		
-		if(!is_wp_error($image))
-		{
-		
-			$image->resize(150, 150);
-			$image->save($spath);
-		
-		}	
-
 		global $wpdb;
 		
-		$wpdb->insert(
+		if($wpdb->insert(
 			$wpdb->prefix . 'utubevideo_album', 
 			array(
 				'ALB_NAME' => $alname,
-				'ALB_THUMB' => $v,
+				'ALB_THUMB' => 'missing',
 				'ALB_UPDATEDATE' => $time,
 				'DATA_ID' => $dataid
-			)
-		);
-		
-		$key = $wpdb->insert_id;
-		
-		if($wpdb->insert(
-			$wpdb->prefix . 'utubevideo_video', 
-			array(
-				'VID_NAME' => $vidname,
-				'VID_URL' => $v,
-				'VID_UPDATEDATE' => $time,
-				'ALB_ID' => $key
 			)
 		))
 			echo '<div class="updated fade"><p>Video album created</p></div>';
 		else
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
-
+		
 	}
-	//save a new video//
+	//save a new video script//
 	elseif(isset($_POST['saveVideo']))
 	{
 	
@@ -233,11 +222,13 @@ if(is_admin())
 		$time = current_time('timestamp');
 		$key = sanitize_text_field($_POST['key']);
 		
+		//parse video url to get video id//
 		$url = parse_url($url);
 		parse_str($url['query']);
 		
 		$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
 		
+		//save image for video into cache//
 		$image = wp_get_image_editor($yurl);
 
 		$dir = wp_upload_dir();
@@ -269,18 +260,25 @@ if(is_admin())
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
 	
 	}
-	//save an album edit//
+	//save an album edit script//
 	elseif(isset($_POST['saveAlbumEdit']))
 	{
 	
 		global $wpdb;
 		$alname = htmlentities($_POST['alname'], ENT_QUOTES);
+		
+		if(isset($_POST['albumThumbSelect']))
+			$thumb = $_POST['albumThumbSelect'];
+		else
+			$thumb = 'missing';
+		
 		$key = sanitize_text_field($_POST['key']);
 	
 		if($wpdb->update(
 			$wpdb->prefix . 'utubevideo_album', 
 			array( 
-				'ALB_NAME' => $alname
+				'ALB_NAME' => $alname,
+				'ALB_THUMB' => $thumb
 			), 
 			array('ALB_ID' => $key)
 		) >= 0)
@@ -289,7 +287,7 @@ if(is_admin())
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
 	
 	}
-	//delete an album//
+	//delete an album script//
 	elseif(isset($_POST['delAl']))
 	{
 	
@@ -298,8 +296,10 @@ if(is_admin())
 		$dir = wp_upload_dir();
 		$dir = $dir['basedir'];
 		
+		//get videos in album to delete//
 		$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key, ARRAY_A);
 		
+		//for each video in album delete thumbnail from cache//
 		foreach($data as $value)
 		{
 		
@@ -319,29 +319,14 @@ if(is_admin())
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
 		
 	}
-	//save a video edit//
+	//save a video edit script//
 	elseif(isset($_POST['saveVideoEdit']))
 	{
 	
 		global $wpdb;
 		$vidname = htmlentities($_POST['vidname'], ENT_QUOTES);
 		$key = sanitize_text_field($_POST['key']);
-		
-		if(isset($_POST['useAlbumThumb']))
-		{
-
-			$rows = $wpdb->get_results('SELECT VID_URL, ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
-			
-			$wpdb->update(
-				$wpdb->prefix . 'utubevideo_album', 
-				array( 
-					'ALB_THUMB' => $rows[0]['VID_URL']
-				), 
-				array('ALB_ID' => $rows[0]['ALB_ID'])
-			);
-
-		}
-			
+	
 		if($wpdb->update(
 			$wpdb->prefix . 'utubevideo_video', 
 			array( 
@@ -354,7 +339,7 @@ if(is_admin())
 			echo '<div class="error fade"><p>Oops... something went wrong</p></div>';
 	
 	}
-	//delete a video//
+	//delete a video script//
 	elseif(isset($_POST['delVid']))
 	{
 		
@@ -363,8 +348,10 @@ if(is_admin())
 		$dir = wp_upload_dir();
 		$dir = $dir['basedir'];
 		
+		//get thumbnail name for video//
 		$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
 		
+		//delete video thumbnail//
 		unlink($dir . '/utubevideo-cache/' . $data[0]['VID_URL']  . '.jpg');
 		
 		if($wpdb->query( 
@@ -386,26 +373,41 @@ if(is_admin())
 		
 			<?php screen_icon(); ?>
 			
-			<h2>uTube Video Settings</h2>
+			<h2>uTubeVideo Settings</h2>
+			
+			<script>
+				
+				jQuery(function(){
+					
+					jQuery('.utConfirm').click(function(){
+						
+						if(!confirm('Are you sure you want to delete this item?'))
+							return false;
+						
+					});
+					
+				});
+				
+			</script>
 			
 			<?php	
 			
-			//create a dataset form//
+			//display create a gallery (dataset) form//
 			if(isset($_POST['createDataset']))
 			{
 			
 			?>
-			
+
 				<div class="utFormBox utTopformBox">
 					<form method="post">  
-						<h3><?php _e('Create Dataset'); ?></h3>
+						<h3><?php _e('Create Gallery'); ?></h3>
 						<p>
-							<label><?php _e('Dataset Name: '); ?></label>
+							<label><?php _e('Gallery Name: '); ?></label>
 							<input type="text" name="dsetname"/>
-							<span class="utHint"><?php _e(' ex: name of dataset for your reference'); ?></span>
+							<span class="utHint"><?php _e(' ex: name of gallery for your reference'); ?></span>
 						</p>			
 						<p class="submit">  
-							<input type="submit" name="saveDataset" value="<?php _e('Save Dataset') ?>" class="button-primary"/> 
+							<input type="submit" name="saveDataset" value="<?php _e('Save New Gallery') ?>" class="button-primary"/> 
 							<a href="?page=utubevideo_settings" class="utCancel">Go Back</a>							
 						</p> 
 					</form>
@@ -414,7 +416,7 @@ if(is_admin())
 			<?php
 			
 			}
-			//create an album form//
+			//display create album form//
 			elseif(isset($_POST['createAl']))
 			{
 			
@@ -428,7 +430,7 @@ if(is_admin())
 							<input type="text" name="alname"/>
 							<span class="utHint"><?php _e(' ex: name of video album'); ?></span>
 						</p>
-						<p>
+						<!--<p>
 							<label><?php _e('Video URL: '); ?></label>
 							<input type="text" name="url"/>
 							<span class="utHint"><?php _e(' ex: first youtube video for album'); ?></span>
@@ -437,9 +439,9 @@ if(is_admin())
 							<label><?php _e('Video Name: '); ?></label>
 							<input type="text" name="vidname"/>
 							<span class="utHint"><?php _e(' ex: the name of the video'); ?></span>
-						</p>							
+						</p>-->							
 						<p class="submit">  
-							<input type="submit" name="saveAlbum" value="<?php _e('Save Album') ?>" class="button-primary"/> 
+							<input type="submit" name="saveAlbum" value="<?php _e('Save New Album') ?>" class="button-primary"/> 
 							<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utCancel">Go Back</a>							
 						</p> 
 					</form>
@@ -447,7 +449,7 @@ if(is_admin())
 
 			<?php
 			}
-			//edit an album form//
+			//display album edit form//
 			elseif(isset($_POST['editAl']))
 			{
 			
@@ -457,6 +459,7 @@ if(is_admin())
 				$dir = $dir['baseurl'];
 
 				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+				$thumbs = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key, ARRAY_A);
 				
 			?>
 				
@@ -464,16 +467,41 @@ if(is_admin())
 					<form method="post">  
 						<h3><?php _e('Edit Video Album'); ?></h3>
 						<p>
-							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['ALB_THUMB'] . '.jpg';?>" class="utPrevThumb"/>
+							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['ALB_THUMB'] . '.jpg'; ?>" class="utPrevThumb"/>
 						</p>
 						<p>
 							<label><?php _e('Album Name: '); ?></label>
 							<input type="text" name="alname" value="<?php echo stripslashes($rows[0]['ALB_NAME']); ?>"/>
 							<span class="utHint"><?php _e(' ex: name of video album'); ?></span>
-						</p>						
+						</p>	
+						<p>
+							<label><?php _e('Select Album Thumbnail: '); ?></label>
+							<div id="utThumbSelection">
+							
+							<?php
+							
+							foreach($thumbs as $value)
+							{
+							
+							?>
+							
+								<div>
+									<img src="<?php echo $dir . '/utubevideo-cache/' . $value['VID_URL'] . '.jpg'; ?>" class="utPrevThumb"/>
+									<input type="radio" name="albumThumbSelect" value="<?php echo $value['VID_URL']; ?>" <?php echo ($rows[0]['ALB_THUMB'] == $value['VID_URL'] ? 'checked' : ''); ?>/>
+								</div>
+							
+							<?php
+							
+							}
+							
+							?>
+						
+							</div>
+							<span class="utHint"><?php _e(' ex: choose the thumbnail for the album'); ?></span>
+						</p>
 						<p class="submit">  
 							<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-							<input type="submit" name="saveAlbumEdit" value="<?php _e('Save Album') ?>" class="button-primary"/> 
+							<input type="submit" name="saveAlbumEdit" value="<?php _e('Save Changes') ?>" class="button-primary"/> 
 							<a href="<?php echo $_POST['prev']; ?>" class="utCancel">Go Back</a>			
 						</p> 
 					</form>
@@ -482,17 +510,19 @@ if(is_admin())
 			<?php
 			
 			}
-			//add a video form//
+			//display add video form//
 			elseif(isset($_POST['addVideo']))
 			{
 			
+				global $wpdb;
 				$key = sanitize_text_field($_POST['key']);
-				
+				$rows = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+			
 			?>
 				
 				<div class="utFormBox utTopformBox">
 					<form method="post">  
-						<h3><?php _e('Add New Video'); ?></h3>
+						<h3><?php echo _('Add New Video to [') . $rows[0]['ALB_NAME'] . ']'; ?></h3>
 						<p>
 							<label><?php _e('Video URL: '); ?></label>
 							<input type="text" name="url"/>
@@ -505,7 +535,7 @@ if(is_admin())
 						</p>							
 						<p class="submit">  
 							<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-							<input type="submit" name="saveVideo" value="<?php _e('Save Video') ?>" class="button-primary"/> 
+							<input type="submit" name="saveVideo" value="<?php _e('Save New Video') ?>" class="button-primary"/> 
 							<a href="<?php echo $_POST['prev']; ?>" class="utCancel">Go Back</a>			
 						</p> 
 					</form>
@@ -514,7 +544,7 @@ if(is_admin())
 			<?php
 
 			}
-			//edit a video form//
+			//display video edit form//
 			elseif(isset($_POST['editVid']))
 			{
 			
@@ -538,15 +568,10 @@ if(is_admin())
 							<input type="text" name="vidname" value="<?php echo stripslashes($rows[0]['VID_NAME']); ?>"/>
 							<span class="utHint"><?php _e(' ex: name of video'); ?></span>
 						</p>
-						<p>
-							<label><?php _e('Use as Album Cover: '); ?></label>
-							<input type="checkbox" name="useAlbumThumb"/>
-							<span class="utHint"><?php _e(' ex: use as album thumb'); ?></span>
-						</p>
 						<p class="submit">  
 							<input type="hidden" name="key" value="<?php echo $key; ?>"/>
 							<input type="hidden" name="prev" value="<?php echo $_POST['prev']; ?>"/>
-							<input type="submit" name="saveVideoEdit" value="<?php _e('Save Video') ?>" class="button-primary"/> 
+							<input type="submit" name="saveVideoEdit" value="<?php _e('Save Changes') ?>" class="button-primary"/> 
 							<a href="<?php echo $_POST['prev']; ?>" class="utCancel">Go Back</a>							
 						</p> 
 					</form>
@@ -559,7 +584,7 @@ if(is_admin())
 			elseif(isset($_GET['act']))
 			{
 			
-				//view a dataset//
+				//view video albums in a gallery//
 				if($_GET['act'] == 'viewdset')
 				{
 				
@@ -573,7 +598,7 @@ if(is_admin())
 				?>
 
 					<div class="utFormBox utTopformBox">
-						<h3><?php echo 'Video Albums for ' . $data[0]['DATA_NAME']; ?></h3>
+						<h3><?php echo 'Video Albums for [' . $data[0]['DATA_NAME'] . ']'; ?></h3>
 						<table class="widefat fixed utTable">
 							<thead>
 								<tr>
@@ -620,7 +645,7 @@ if(is_admin())
 										<form method="post">
 											<input class="linkButton" type="submit" name="editAl" value="Edit"/>
 											<input class="linkButton" type="submit" name="addVideo" value="Add Video"/>
-											<input class="linkButton" type="submit" name="delAl" value="Delete"/>
+											<input class="linkButton utConfirm" type="submit" name="delAl" value="Delete"/>
 											<input type="hidden" name="key" value="<?php echo $value['ALB_ID']; ?>"/>
 											<input type="hidden" name="prev" value="?page=utubevideo_settings&act=viewdset&id=<?php echo $id; ?>"/>
 											<a href="?page=utubevideo_settings&act=viewal&id=<?php echo $value['ALB_ID']; ?>&prev=<?php echo urlencode('?page=utubevideo_settings&act=viewdset&id=' . $id); ?>">View</a>
@@ -648,7 +673,7 @@ if(is_admin())
 						</table>
 						<form method="post">
 							<p class="submit">
-								<input class="button-secondary" type="submit" name="createAl" value="Create Album"/>
+								<input class="button-secondary" type="submit" name="createAl" value="Create New Album"/>
 								<input type="hidden" name="prev" value="?page=utubevideo_settings&act=viewdset&id=<?php echo $id; ?>"/>
 								<a href="?page=utubevideo_settings" class="utCancel">Go Back</a>
 							</p>
@@ -658,7 +683,7 @@ if(is_admin())
 				<?php
 			
 				}
-				//view an album//
+				//view videos within a video album//
 				elseif($_GET['act'] == 'viewal')
 				{
 
@@ -672,7 +697,7 @@ if(is_admin())
 				?>
 
 					<div class="utFormBox utTopformBox">
-						<h3><?php echo 'Videos for ' . $data[0]['ALB_NAME']; ?></h3>
+						<h3><?php echo 'Videos for [' . $data[0]['ALB_NAME'] . ']'; ?></h3>
 						<table class="widefat fixed utTable">
 							<thead>
 								<tr>
@@ -718,7 +743,7 @@ if(is_admin())
 									<td>
 										<form method="post">
 											<input class="linkButton" type="submit" name="editVid" value="Edit"/>
-											<input class="linkButton" type="submit" name="delVid" value="Delete"/>
+											<input class="linkButton utConfirm" type="submit" name="delVid" value="Delete"/>
 											<input type="hidden" name="key" value="<?php echo $value['VID_ID']; ?>"/>
 											<input type="hidden" name="prev" value="?page=utubevideo_settings&act=viewal&id=<?php echo $id; ?>"/>
 											<a href="http://www.youtube.com/watch?v=<?php echo $value['VID_URL']; ?>" target="_blank">View</a>
@@ -754,7 +779,7 @@ if(is_admin())
 				}
 				
 			}
-			//display main options and datasets//
+			//display main options and galleries//
 			else
 			{
 				
@@ -762,6 +787,34 @@ if(is_admin())
 
 			?>
 			
+				<script>
+				
+					//javascript for changing and resetting values for player size//
+					jQuery(function(){
+					
+						jQuery('#resetWidth').click(function(){
+		
+							jQuery('#playerWidth').val('950');
+							jQuery('#playerHeight').val('537');
+							return false;
+						
+						});
+						
+						jQuery('#playerWidth').keyup(function(){
+						
+							jQuery('#playerHeight').val(Math.round(jQuery('#playerWidth').val() / 1.77));
+						
+						});
+						
+						jQuery('#playerHeight').keyup(function(){
+						
+							jQuery('#playerWidth').val(Math.round(jQuery('#playerHeight').val() * 1.77));
+						
+						});
+					
+					});
+				
+				</script>
 				<div class="utFormBox utTopformBox">
 					<form method="post">  
 						<h3>General Settings</h3>					
@@ -770,17 +823,25 @@ if(is_admin())
 							<input type="checkbox" name="fancyboxInc" <?php echo ($main['fancyboxInc'] == 'yes' ? 'checked' : ''); ?>/>
 							<span class="utHint"><?php _e(' ex: check only if not using a fancybox plugin'); ?></span>
 						</p> 
+						<p>
+							<label><?php _e('Max Video Player Dimensions: '); ?></label>
+							<input type="text" name="playerWidth" id="playerWidth" value="<?php echo $main['playerWidth']; ?>"/>
+							<span> X </span>
+							<input type="text" name="playerHeight" id="playerHeight" value="<?php echo $main['playerHeight']; ?>"/>
+							<button id="resetWidth" class="button-secondary">Reset</button>
+							<span class="utHint"><?php _e(' ex: set max dimensions of video player, aspect ratio is 1.77 (16:9)'); ?></span>
+						</p>
 						<p class="submit">  
 							<input type="submit" name="utSaveOpts" value="<?php _e('Save Changes') ?>" class="button-primary"/>  
 						</p> 
 					</form>	
 				</div>
 				<div class="utFormBox">
-					<h3>uTube Video Datasets</h3>
+					<h3>uTubeVideo Galleries</h3>
 					<table class="widefat fixed utTable">
 						<thead>
 							<tr>
-								<th>Dataset Name</th>
+								<th>Gallery	Name</th>
 								<th>Shortcode</th>
 								<th>Date Added</th>
 								<th>Actions</th>
@@ -800,7 +861,7 @@ if(is_admin())
 						?>
 							
 							<tr>
-								<td>No datasets found</td>
+								<td>No galleries found</td>
 								<td></td>
 								<td></td>
 								<td></td>
@@ -824,7 +885,7 @@ if(is_admin())
 								<td>
 									<form method="post">
 										<a href="?page=utubevideo_settings&act=viewdset&id=<?php echo $value['DATA_ID']; ?>" class="utBlock">View</a>
-										<input class="linkButton" type="submit" name="delSet" value="Delete"/>
+										<input class="linkButton utConfirm" type="submit" name="delSet" value="Delete"/>
 										<input type="hidden" name="key" value="<?php echo $value['DATA_ID']; ?>"/>
 									</form>
 								</td>	
@@ -841,7 +902,7 @@ if(is_admin())
 						</tbody>
 						<tfoot>
 							<tr>
-								<th>Dataset Name</th>
+								<th>Gallery Name</th>
 								<th>Shortcode</th>
 								<th>Date Added</th>
 								<th>Actions</th>
@@ -850,9 +911,19 @@ if(is_admin())
 					</table>
 					<form method="post">
 						<p class="submit">
-							<input class="button-secondary" type="submit" name="createDataset" value="Create New Dataset"/>
+							<input class="button-secondary" type="submit" name="createDataset" value="Create New Gallery"/>
 						</p>
 					</form>
+				</div>
+				<div class="utFormBox">
+					<h3>FAQ's</h3>
+					<ul>
+						<li>All videos from youtube may be added into a gallery unless embedding has been disabled for the video on youtube.</li>
+						<li>If using a fancybox plugin do not check the 'Include Fancybox Scripts' box, if not using a fancybox plugin do check the box or otherwise the video popup will not work correctly.</li>
+						<li>Only YouTube videos can be added to a gallery at this time.</li>
+						<li>To create a gallery first click the 'Create New Gallery' button. Once a gallery has been created you can click 'View' in the actions panel to show the video albums within the gallery. Click 'Create New Album' to make a blank video album for the gallery. Once an album has been created it will be given a default missing album art cover. Add videos to the album by clicking 'Add Video' in the actions panel for a video album. Once videos are added to the album you may click 'Edit' on the albums actions pane. To add gallery to a page or post copy and paste the gallery's shortcode onto that page or post.</li>
+						<li>You can set the size of the video player by changing the max video player dimensions in the General Settings part of this menu. The video size will automatically retain a 1.77 (16:9) aspect ratio.</li>
+					</ul>
 				</div>
 
 			<?php
@@ -869,10 +940,12 @@ if(is_admin())
 	
 	//setup hooks for administration//
 	register_activation_hook( __FILE__, 'utubevideo_activate');
-	add_action('admin_menu', create_function('', 'add_options_page("uTube Video Settings", "uTube", "manage_options", "utubevideo_settings", "utubevideo_main_settings");'));
+	add_action('admin_menu', create_function('', 'add_options_page("uTube Video Settings", "uTubeVideo", "manage_options", "utubevideo_settings", "utubevideo_main_settings");'));
 	add_action('admin_head', 'utubevideo_style_setup');
+	add_action('admin_head', 'utubevideo_admin_scripts_setup');
 
 }
+//if at frontend//
 else
 {
 	
@@ -888,20 +961,26 @@ else
 		
 		$content = '<div class="utVideoContainer">';
 		
+		//display videos from album//
 		if(isset($_GET['aid']))
 		{
 		
 			$aid = sanitize_text_field($_GET['aid']);
 		
+			//get videos in album//
 			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $aid . ' ORDER BY VID_UPDATEDATE', ARRAY_A);
 			
+			//get name of video album//
 			$name = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $aid, ARRAY_A);
 		
+			//if there are videos in the video album//
 			if(!empty($rows))
 			{
 			
+				//create html for breadcrumbs//
 				$content .= '<div class="utBreadcrumbs"><a href="' . substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) . '">Albums</a><span> > ' . stripslashes($name[0]['ALB_NAME']) . '</span></div>';
 			
+				//create html for each video//
 				foreach($rows as $value)
 				{
 				
@@ -910,22 +989,27 @@ else
 				}
 			
 			}
+			//if the video album is empty :(//
 			else
 			{
 			
-				echo 'Sorry... the page you were looking for no longer exists.';
+				echo 'Sorry... there appear to be no videos for this album yet.';
 				
 			}
 		
 		}
+		//display video albums//
 		else
 		{
 		
+			//get video albums in the gallery//
 			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $id . ' ORDER BY ALB_ID', ARRAY_A);
 			
+			//if there are video albums in the gallery//
 			if(!empty($rows))
 			{
 		
+				//create html for each video album//
 				foreach($rows as $value)
 				{
 			
@@ -934,10 +1018,11 @@ else
 				}
 		
 			}
+			//if there are no video albums in the gallery :(//
 			else
 			{
 			
-				echo 'Sorry... the page you were looking for no longer exists.';
+				echo 'Sorry... there appear to be no video albums yet.';
 				
 			}
 		
@@ -945,6 +1030,7 @@ else
 						
 		$content .= '</div>';
 
+		//return html//
 		return $content;
 
 	}
@@ -952,6 +1038,9 @@ else
 	//insert fancybox calls for videogalleries
 	function utubevideo_fancybox_call()
 	{
+	
+		//get options//
+		$main = get_option('utubevideo_main_opts');
 	
 	?>
 
@@ -974,8 +1063,8 @@ else
 					'enableEscapeButton': true,
 					'showCloseButton': true,
 					'showNavArrows': false,				
-					'width': 950,
-					'height': 560,
+					'width': <?php echo $main['playerWidth']; ?>,
+					'height': <?php echo $main['playerHeight']; ?>,
 					'centerOnScroll': true,
 					'type': 'iframe'
 				});
@@ -991,7 +1080,8 @@ else
 	//embed fancybox scripts if needed//
 	function utubevideo_scripts_setup()
 	{
-
+	
+		//get options//
 		$main = get_option('utubevideo_main_opts');
 		
 		if($main['fancyboxInc'] == 'yes')
@@ -1024,6 +1114,14 @@ function utubevideo_style_setup()
 	wp_register_style('utubevideo_style', plugins_url('style.css', __FILE__));
 	wp_enqueue_style('utubevideo_style');
 
+}
+
+//add jquery to administration page//
+function utubevideo_admin_scripts_setup()
+{
+
+	wp_enqueue_script('jquery');
+	
 }
 
 ?>

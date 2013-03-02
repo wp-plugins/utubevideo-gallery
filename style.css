@@ -27,6 +27,7 @@
 	display: inline-block; 
 	width: 150px; 
 	margin: 10px 20px;
+	vertical-align: middle;
 }
 
 .utVideoContainer .utThumb img:hover{
@@ -57,12 +58,12 @@
 /*ADMIN CSS*/
 
 .utFormBox{
-	border-bottom: 1px solid #ccc;
+	border-bottom: 1px solid #dfdfdf;
 	margin-bottom: 15px;
 }
 
 .utTopformBox{
-	border-top: 1px solid #ccc;
+	border-top: 1px solid #dfdfdf;
 	margin-top: 15px;
 }
 
@@ -94,6 +95,20 @@
 	width: 225px;
 }
 
+.utFormBox #playerWidth, .utFormBox #playerHeight{
+	width: 100px;
+}
+
+.utFormBox li{
+	list-style-type: square;
+	line-height: 1.7em;
+}
+
+.utFormBox ul{
+	margin-left: 15px;
+	font-size: 13px;
+}
+
 .utBlock{
 	display: block;
 }
@@ -122,3 +137,26 @@
 	color: #d54e21;
 	cursor: pointer;
 }
+
+#utThumbSelection{
+	margin-left: 220px;
+}
+
+#utThumbSelection div{
+	display: inline-block; 
+	width: 100px; 
+	margin: 5px;
+}
+
+#utThumbSelection img{
+	width: 100px;
+	height: auto;
+	margin: 5px;
+}
+
+#utThumbSelection input[type='radio']{
+	display: block;
+	width: 20px; 
+	margin: 3px auto 0 auto;
+}
+
