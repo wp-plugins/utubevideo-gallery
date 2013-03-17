@@ -160,3 +160,7 @@
 	margin: 3px auto 0 auto;
 }
 
+.utAdminError{
+	font-size: 16px;
+	color: red;
+}

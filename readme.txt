@@ -4,7 +4,7 @@ Donate link: http://www.codeclouds.net/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
 Tested up to: 3.5.1
-Stable tag: 1.2
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,8 @@ Features Include:
 - Thumbnail images for videos are cached on your own website.
 - Annotations are hidden automatically for a movie like experience.
 - Set size of video player
+- Order video albums by newest or oldest video first
+- Set video thumbnails as either square or rectangle
 
 == Installation ==
 
@@ -57,6 +59,10 @@ No, only Youtube videos are supported, hence the name of the plugin.
 
 Yes the video player size can be set in the 'General Settings' section in the settings page.
 
+= How do I change older videos into the new square thumbnail type? = 
+
+Just go to edit the video in question: edit the thumbnail type and save changes.
+
 == Screenshots ==
 
 1. A gallery embedded on a page showing the videos in an album
@@ -64,6 +70,13 @@ Yes the video player size can be set in the 'General Settings' section in the se
 3. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.2.5 =
+
+* Added setting for video ordering in albums
+* Added setting for video thumbnail type
+* Fixed version information on included files
+* Fixed bug when including multiple galleries on the same post or page
 
 = 1.2 = 
 * Minor tweaks to administrative panel
