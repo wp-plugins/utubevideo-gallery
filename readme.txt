@@ -4,11 +4,11 @@ Donate link: http://www.codeclouds.net/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
 Tested up to: 3.5.1
-Stable tag: 1.2.5
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Display unlimited galleries of youtube videos in any post or page within your site. 
+Display unlimited galleries of YouTube videos in any post or page within your site. 
 
 == Description ==
 
@@ -16,13 +16,14 @@ This plugin allows the displaying of unlimited galleries of YouTube videos withi
 
 Features Include:
 
-- Unlimited video galleries (also known as datasets).
+- Unlimited video galleries.
 - Built in Fancybox support with options to use Fancybox already installed by another plugin.
 - Thumbnail images for videos are cached on your own website.
 - Annotations are hidden automatically for a movie like experience.
 - Set size of video player
-- Order video albums by newest or oldest video first
+- Order video albums by newest or oldest videos first
 - Set video thumbnails as either square or rectangle
+- View counts of video albums and videos within a gallery in the backend
 
 == Installation ==
 
@@ -70,6 +71,13 @@ Just go to edit the video in question: edit the thumbnail type and save changes.
 3. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.3 =
+
+* Complete redesign of code to a more object oriented design for namespacing
+* Tweaks to admin interface, more minimal
+* Added video album and video count to admin interface
+* Added album backlink for video albums on frontend with no videos
 
 = 1.2.5 =
 
