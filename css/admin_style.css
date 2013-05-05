@@ -1,0 +1,160 @@
+/*ADMIN CSS*/
+
+.utFormBox{
+	margin-bottom: 15px;
+	font-size: 13px;
+}
+
+.utTopformBox{
+	margin-top: 15px;
+}
+
+.utFormBox p{
+	margin: 20px 0;
+}
+
+.utFormbox a{
+	margin: 5px 0;
+}
+
+.utFormBox label{
+	width: 220px;
+	display: inline-block;
+	font-size: 13px;
+}
+
+.utFormBox .utHint{
+	display: block;
+	margin-left: 225px;
+	font-style: italic; 
+	margin-top: 2px;
+}
+
+.utFormBox .utCancel{
+	color: #f00;
+	text-decoration: underline;
+	margin-left: 15px;
+	padding: 2px 3px;
+	font-size: 12px;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+.utFormBox .utCancel:hover{
+	background-color: #f00;
+	color: #fff;
+}
+
+.utFormBox select, .utFormBox input[type='text']{
+	width: 300px;
+}
+
+.utFormBox #playerWidth, .utFormBox #playerHeight{
+	width: 100px;
+}
+
+.utFormBox li{
+	list-style-type: square;
+	line-height: 1.7em;
+}
+
+.utFormBox ul{
+	margin-left: 15px;
+	font-size: 13px;
+}
+
+.utFormBox .utActionBar{
+	padding: 0!important;
+}
+
+.utBlock{
+	display: block;
+}
+
+.utTable{
+	line-height: 1.6em;
+}
+
+.utTable .utThumbCol{
+	width: 170px;
+}
+
+.utPrevThumb{
+	margin: 5px; 
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	box-shadow: 5px 5px 20px #888;
+	-moz-box-shadow: 5px 5px 20px #888;
+	-webkit-box-shadow: 5px 5px 20px #888;
+}
+
+.utLinkButton{
+	border: 0; 
+	font-size: 12px; 
+	background-color: transparent; 
+	padding: 0; 
+	margin: 5px 0;
+	color: #21759b;
+	display: block;
+	line-height: 1.6em;
+}
+
+.utLinkButton:hover{
+	color: #d54e21;
+	cursor: pointer;
+}
+
+#utThumbSelection{
+	margin-left: 220px;
+}
+
+#utThumbSelection div{
+	display: inline-block; 
+	width: 100px;
+	height: 126px;
+	margin: 7px; 
+	vertical-align: top;
+}
+
+#utThumbSelection img{
+	width: 100px;
+	height: auto;
+	margin: 0!important;
+}
+
+#utThumbSelection input[type='radio']{
+	display: block;
+	width: 20px; 
+	margin: 3px auto 0 auto;
+	float: right;
+}
+
+.utAdminError{
+	font-size: 16px;
+	color: #f00;
+}
+
+#icon-utubevideo-gallery{
+	background-image: url('../i/utubevideo_icon.png');
+}
+
+.utSubH3{
+	font-size: 14px;
+	font-weight: normal;
+}
+
+#utMastHead{
+	margin-bottom: 10px;
+}
+
+.utPostBox{
+	font-family: Georgia,'Times New Roman','Bitstream Charter',Times,serif; 
+	font-size: 15px;
+	font-weight: normal;
+	padding: 7px 10px;
+	margin: 0; 
+	line-height: 1em;
+	cursor: default!important;
+}

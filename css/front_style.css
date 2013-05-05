@@ -1,0 +1,56 @@
+/*FRONTEND CSS*/
+
+.utBreadcrumbs{
+	margin-bottom: 10px;
+}
+
+.utBreadcrumbs a{
+	font-size: 13px!important;
+	text-decoration: none!important;
+}
+
+.utBreadcrumbs a:hover{
+	text-decoration: underline;
+}
+
+.utBreadcrumbs span{
+	font-size: 13px;
+}
+
+.utVideoContainer{
+	width: 100%; 
+	margin: 0 auto;
+}
+
+.utVideoContainer .utThumb{
+	text-align: center;
+	display: inline-block; 
+	width: 150px; 
+	margin: 10px 20px;
+	vertical-align: middle;
+}
+
+.utVideoContainer .utThumb img:hover{
+	filter:alpha(opacity=70);
+    -moz-opacity:.70;
+    opacity: .70;
+}
+
+.utVideoContainer .utThumb img{
+	box-shadow: 5px 5px 20px #888;
+	-moz-box-shadow: 5px 5px 20px #888;
+	-webkit-box-shadow: 5px 5px 20px #888;
+	-webkit-transition: opacity .2s linear;
+	-moz-transition: opacity .2s linear;
+	transition: opacity .2s linear;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	background: none!important;
+	padding: 0!important;
+	border: 0!important;
+}
+
+.utVideoContainer .utThumb span{
+	font-size: 13px;
+}
