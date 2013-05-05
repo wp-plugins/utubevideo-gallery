@@ -1,10 +1,10 @@
 === uTubeVideo Gallery ===
 Contributors: dman25560
-Donate link: http://www.codeclouds.net/
+Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
 Tested up to: 3.5.1
-Stable tag: 1.3
+Stable tag: 1.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Display unlimited galleries of YouTube videos in any post or page within your si
 
 == Description ==
 
-This plugin allows the displaying of unlimited galleries of YouTube videos within any post or page within your site. No API keys are necessary. Just install and start creating.
+This plugin allows the displaying of galleries of YouTube videos within any post or page within your site. No API keys are necessary. Just install and start creating.
 
 Features Include:
 
@@ -21,7 +21,10 @@ Features Include:
 - Thumbnail images for videos are cached on your own website.
 - Annotations are hidden automatically for a movie like experience.
 - Set size of video player
+- Set progress bar color of video player
+- Set starting resolution of videos (480p, 720p, or 1080p)
 - Order video albums by newest or oldest videos first
+- Possiblity of skipping video albums and just display videos
 - Set video thumbnails as either square or rectangle
 - View counts of video albums and videos within a gallery in the backend
 
@@ -72,15 +75,25 @@ Just go to edit the video in question: edit the thumbnail type and save changes.
 
 == Changelog ==
 
-= 1.3 =
+= 1.3.5 =
+* Fixed admin script processing hook
+* Fixed general settings not showing as updated when first updated
+* Fixed a link from appearing when no albums were found in a gallery
+* Fixed a problem with single quotes being escaped when displayed in album titles in admin
+* Added support for skipping video albums from being displayed in a gallery
+* Added a button to add videos from admin video display page
+* Fixed album and video counting bug
+* Added ability to set starting resolution of videos
+* Added setting to set the color of the player progress bar
+* Added better security to plugin
 
+= 1.3 =
 * Complete redesign of code to a more object oriented design for namespacing
 * Tweaks to admin interface, more minimal
 * Added video album and video count to admin interface
 * Added album backlink for video albums on frontend with no videos
 
 = 1.2.5 =
-
 * Added setting for video ordering in albums
 * Added setting for video thumbnail type
 * Fixed version information on included files

@@ -50,12 +50,13 @@ class utvFrontend
 				jQuery('a.utFancyVid').fancybox({
 					'cyclic': false,
 					'padding': 0,
+					'margin': 20,
 					'opacity': true,
 					'speedIn': 500,
 					'speedOut': 500,
 					'changeSpeed': 300,
 					'overlayShow': true,
-					'overlayOpacity': '0.8',
+					'overlayOpacity': '0.85',
 					'overlayColor': '#000',
 					'titleShow': true,
 					'titlePosition': 'outside',
@@ -112,7 +113,7 @@ class utvFrontend
 				$aid = $args[0];
 				$check = $args[1];
 				
-				if($check == $id)
+				if($check == $id && !isset($skipalbums))
 					$valid = true;
 			
 			}
@@ -140,7 +141,7 @@ class utvFrontend
 				foreach($rows as $value)
 				{
 				
-					$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
+					$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
 					
 				}
 			
@@ -167,21 +168,47 @@ class utvFrontend
 			if(!empty($rows))
 			{
 		
-				//create html for each video album//
-				foreach($rows as $value)
+				//if skipalbums in set to true//
+				if(isset($skipalbums) && $skipalbums == 'true')
 				{
+
+					//build array of album ids//
+					foreach($rows as $idval)
+						$alids[] = $idval['ALB_ID'];
 			
-					$content .= '<div class="utThumb"><a href="?aid=' . $value['ALB_ID'] . '_' . $id . '"><img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/></a><span>' . $value['ALB_NAME'] . '</span></div>';
+					//implode ids to string//
+					$alids = implode(', ', $alids);
+					//get video info for each all albums in gallery//
+					$vids = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID IN ('  . $alids . ') ORDER BY VID_UPDATEDATE', ARRAY_A);
+
+					//create html for all videos in gallery//
+					foreach($vids as $value)
+					{
+						
+						$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
+							
+					}
+		
+				}
+				//if skipalbums is not set to true//
+				else
+				{
+
+					//create html for each video album//
+					foreach($rows as $value)
+					{
+						
+						$content .= '<div class="utThumb"><a href="?aid=' . $value['ALB_ID'] . '_' . $id . '"><img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/></a><span>' . stripslashes($value['ALB_NAME']) . '</span></div>';
+							
+					}
 			
 				}
-		
+				
 			}
 			//if there are no video albums in the gallery :(//
 			else
 			{
 			
-				$content .= '<div class="utBreadcrumbs"><a href="' . substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) . '">Albums</a></div>';
-				
 				$content .= '<p>Sorry... there appear to be no video albums yet.</p>';
 				
 			}

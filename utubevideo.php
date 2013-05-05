@@ -4,7 +4,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.3
+Version: 1.3.5
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -63,7 +63,7 @@ if(!class_exists('utvGallery'))
 				DATA_ID int(11) NOT NULL AUTO_INCREMENT,
 				DATA_NAME varchar(40) NOT NULL,
 				DATA_UPDATEDATE int(11) NOT NULL,
-				DATA_ALBCOUNT int(4),
+				DATA_ALBCOUNT int(4) DEFAULT '0' NOT NULL,
 				UNIQUE KEY DATA_ID (DATA_ID)
 			);
 			CREATE TABLE $tbname[1] (
@@ -72,7 +72,7 @@ if(!class_exists('utvGallery'))
 				ALB_THUMB varchar(40) NOT NULL,
 				ALB_SORT varchar(4) DEFAULT 'desc' NOT NULL,
 				ALB_UPDATEDATE int(11) NOT NULL,
-				ALB_VIDCOUNT int(4),
+				ALB_VIDCOUNT int(4) DEFAULT '0' NOT NULL,
 				DATA_ID int(11) NOT NULL,
 				UNIQUE KEY ALB_ID (ALB_ID)
 			);
@@ -81,6 +81,7 @@ if(!class_exists('utvGallery'))
 				VID_NAME varchar(50) NOT NULL,
 				VID_URL varchar(40) NOT NULL,
 				VID_THUMBTYPE varchar(9) DEFAULT 'rectangle' NOT NULL,
+				VID_QUALITY varchar(6) DEFAULT 'large' NOT NULL,
 				VID_UPDATEDATE int(11) NOT NULL,
 				ALB_ID int(11) NOT NULL,
 				UNIQUE KEY VID_ID (VID_ID)
@@ -139,6 +140,7 @@ if(!class_exists('utvGallery'))
 			$dft['fancyboxInc'] = 'no';
 			$dft['playerWidth'] = 950;
 			$dft['playerHeight'] = 537;
+			$dft['playerProgressColor'] = 'red';
 			
 			$opts = $main + $dft;
 			
