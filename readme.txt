@@ -3,8 +3,8 @@ Contributors: dman25560
 Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
-Tested up to: 3.5.1
-Stable tag: 1.3.5
+Tested up to: 3.5.2
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,9 @@ Features Include:
 - Possiblity of skipping video albums and just display videos
 - Set video thumbnails as either square or rectangle
 - View counts of video albums and videos within a gallery in the backend
+- Add youtube playlists to an album
+- Fallback to use Youtube thumbnails if images are not saving correctly
+- Permalinks for galleries embedded within a page
 
 == Installation ==
 
@@ -67,6 +70,26 @@ Yes the video player size can be set in the 'General Settings' section in the se
 
 Just go to edit the video in question: edit the thumbnail type and save changes.
 
+= How do I set a thumbnail for a new video album? =
+
+After adding at least one video to the album click on the edit link for the video album and select a thumbnail and then click save changes.
+
+= How do I just display videos with no albums? = 
+
+After creating a gallery, at least one album, and adding videos to the album add --skipalbums="true"-- to the shortcode where you are embedding the gallery.
+
+= How big of a playlist can I add to an album at a time? =
+
+Do to script timeouts and such it seems around 80 videos is the limit, but you will have to experiment to find what works best for you.
+
+= What should I do if my thumbnails are not displaying? =
+
+If your thumbnails are not displaying or if you are getting a image editor error you can check the "Load Thumbnails from Youtube" in the settings to load thumbnails directly from Youtube. However all thumbnails will be rectangular when using this option; square thumbnails will be ignored.
+
+= What if my Permalink Status is NOT Ok? = 
+
+If your permalink status is not Ok, it means permalinks are not enabled correctly. Check to see that you have permalinks turned on for Wordpress and if this does not fix the problem, deactivate and reactivate this plugin.
+
 == Screenshots ==
 
 1. A gallery embedded on a page showing the videos in an album
@@ -74,6 +97,25 @@ Just go to edit the video in question: edit the thumbnail type and save changes.
 3. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.5 = 
+
+* Slight changes to frontend gallery interface
+* Fixed issue with thumbnail sizes defaulting to square and stretching rectangular thumbnails
+* Moved all scripts to the footer
+* Patched included fancybox library to support jQuery 1.10
+* Optimized fancybox call javascript
+* Slight changes to admin interface
+* Added settings for fancybox overlay color and opacity
+* Added support for adding youtube playlists to an album
+* Fixed admin navigation link bugs
+* Changed main icon for admin interface and moved menu out of settings, into its own menu slot
+* Added better error messages to admin section for forms
+* Fixed uninstall script - it now deletes thumbnails when plugin is uninstalled
+* Added workaround for thumbnail problems by loading thumbnails directly from Youtube
+* Localized plugin, translations not provided, however
+* Adding permalinks for albums for galleries embedded on a page, posts still use old method
+* And possibly some other stuff I forgot.... 
 
 = 1.3.5 =
 * Fixed admin script processing hook

@@ -11,6 +11,24 @@ if(defined('WP_UNINSTALL_PLUGIN'))
 
 	delete_option('utubevideo_main_opts');
 	
+	$dir = wp_upload_dir();
+	rrmdir($dir['basedir'] . '/utubevideo-cache');
+		
+}
+
+function rrmdir($dir) { 
+
+	foreach(glob($dir . '/*') as $file) 
+	{
+		
+		if(is_dir($file)) 
+			rrmdir($file); 
+		else 
+			unlink($file);
+				
+	} 
+		
+	rmdir($dir); 
 }
 
 ?>

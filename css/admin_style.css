@@ -28,17 +28,19 @@
 	margin-left: 225px;
 	font-style: italic; 
 	margin-top: 2px;
+	color: #666;
 }
 
 .utFormBox .utCancel{
 	color: #f00;
 	text-decoration: underline;
 	margin-left: 15px;
-	padding: 2px 3px;
+	padding: 5px 6px;
 	font-size: 12px;
 	border-radius: 3px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
+	font-weight: bold;
 }
 
 .utFormBox .utCancel:hover{
@@ -80,14 +82,20 @@
 	width: 170px;
 }
 
+.utTable a{
+	font-weight: bold;
+}
+
 .utPrevThumb{
 	margin: 5px; 
 	border-radius: 3px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
-	box-shadow: 5px 5px 20px #888;
-	-moz-box-shadow: 5px 5px 20px #888;
-	-webkit-box-shadow: 5px 5px 20px #888;
+}
+
+.utYtThumb{
+	width: 150px;
+	height: 112px;
 }
 
 .utLinkButton{
@@ -99,6 +107,7 @@
 	color: #21759b;
 	display: block;
 	line-height: 1.6em;
+	font-weight: bold;
 }
 
 .utLinkButton:hover{
@@ -157,4 +166,24 @@
 	margin: 0; 
 	line-height: 1em;
 	cursor: default!important;
+}
+
+.utErrorCode{
+	color: #c00000;
+	border: 1px solid #c00000;
+}
+
+.utOkCode{
+	color: #458B00; 
+	border: 1px solid #458b00;
+}
+
+.utErrorCode, .utOkCode{
+	font-size: 14px; 
+	font-weight: bold;
+	padding: 3px; 
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	margin-left: 1px;
 }

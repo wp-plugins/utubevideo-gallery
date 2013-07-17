@@ -20,7 +20,7 @@ class utvFrontend
 			
 		//add hooks
 		add_shortcode('utubevideo', array(&$this, 'shortcode'));
-		add_action('wp_head', array(&$this, 'setupFancybox'));
+		add_action('wp_print_footer_scripts', array(&$this, 'setupFancybox'));
 		add_action('wp_enqueue_scripts', array(&$this, 'addStyles'));
 		
 		//check for extra fancybox script inclusion
@@ -40,7 +40,7 @@ class utvFrontend
 	//setup fancybox call for video galleries
 	public function setupFancybox()
 	{
-	
+   
 	?>
 
 		<script>
@@ -48,25 +48,19 @@ class utvFrontend
 			jQuery(function(){
 
 				jQuery('a.utFancyVid').fancybox({
-					'cyclic': false,
 					'padding': 0,
-					'margin': 20,
-					'opacity': true,
 					'speedIn': 500,
 					'speedOut': 500,
-					'changeSpeed': 300,
-					'overlayShow': true,
-					'overlayOpacity': '0.85',
-					'overlayColor': '#000',
-					'titleShow': true,
 					'titlePosition': 'outside',
-					'enableEscapeButton': true,
-					'showCloseButton': true,
-					'showNavArrows': false,				
-					'width': <?php echo $this->_options['playerWidth']; ?>,
-					'height': <?php echo $this->_options['playerHeight']; ?>,
 					'centerOnScroll': true,
-					'type': 'iframe'
+					'type': 'iframe',
+					'titleFormat': function(title, currentArray, currentIndex, currentOpts) {
+						return '<span id="fancybox-title-outside" class="utFancyboxTitle">' + title + '</span>';
+					},
+					'overlayOpacity': '<?php echo $this->_options['fancyboxOverlayOpacity']; ?>',
+					'overlayColor': '<?php echo $this->_options['fancyboxOverlayColor']; ?>',
+					'width': <?php echo $this->_options['playerWidth']; ?>,
+					'height': <?php echo $this->_options['playerHeight']; ?>
 				});
 	
 			});
@@ -82,31 +76,41 @@ class utvFrontend
 		
 		//load jquery and fancybox js / css
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('utv_fancybox_script', plugins_url('fancybox/jquery.fancybox-1.3.4.pack.js', __FILE__), array('jquery'), null);
+		wp_enqueue_script('utv_fancybox_script', plugins_url('fancybox/jquery.fancybox-1.3.4.pack.js', __FILE__), array('jquery'), null, true);
 		wp_enqueue_style('utv_fancybox_style', plugins_url('fancybox/jquery.fancybox-1.3.4.css', __FILE__), false, null);
 		
 	}
 		
 	public function shortcode($atts)
 	{
-		
+	
 		extract($atts);
 		
 		global $wpdb;
-		$dir = wp_upload_dir();
-		$dir = $dir['baseurl'];
 		$valid = false;
+		$fancylink = get_query_var('albumid');
 		
 		$content = '<div class="utVideoContainer">';
 		
-		//check each shortcode for valid access of videos... only one should show videos, others should show albums//
-		if(isset($_GET['aid']))
+		//check each shortcode for valid access of videos... only one should show videos, others should show albums
+		if($fancylink != null)
+		{
+		
+			$metadata = $wpdb->get_results('SELECT ALB_ID, DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_SLUG = "' . $fancylink . '"', ARRAY_A);
+		
+			$aid = $metadata[0]['ALB_ID'];
+		
+			if($metadata[0]['DATA_ID'] == $id && !isset($skipalbums))
+				$valid = true;
+			
+		}
+		elseif(isset($_GET['aid']))
 		{
 		
 			$raw = sanitize_text_field($_GET['aid']);
 			$args = explode('_', $raw);
 			
-			//if valid aid token//
+			//if valid aid token
 			if(count($args) == 2)
 			{
 			
@@ -117,107 +121,278 @@ class utvFrontend
 					$valid = true;
 			
 			}
-			
+		
 		}
 		
-		//display videos from album//
-		if($valid)
+		if($this->_options['useYtThumbs'] == 'yes')
 		{
 		
-			//get name of video album//
-			$meta = $wpdb->get_results('SELECT ALB_NAME, ALB_SORT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $aid, ARRAY_A);
-		
-			//get videos in album//
-			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $aid . ' ORDER BY VID_UPDATEDATE ' . $meta[0]['ALB_SORT'], ARRAY_A);
-			
-			//if there are videos in the video album//
-			if(!empty($rows))
+			//display videos from album
+			if($valid)
 			{
 			
-				//create html for breadcrumbs//
-				$content .= '<div class="utBreadcrumbs"><a href="' . substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) . '">Albums</a><span> > ' . stripslashes($meta[0]['ALB_NAME']) . '</span></div>';
+				//get name of video album
+				$meta = $wpdb->get_results('SELECT ALB_NAME, ALB_SORT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $aid, ARRAY_A);
 			
-				//create html for each video//
-				foreach($rows as $value)
+				//get videos in album
+				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $aid . ' ORDER BY VID_UPDATEDATE ' . $meta[0]['ALB_SORT'], ARRAY_A);
+				
+				global $post;
+				
+				//if there are videos in the video album
+				if(!empty($rows))
 				{
 				
-					$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
+					//create html for breadcrumbs
+					$content .= '<div class="utBreadcrumbs"><a href="' . get_permalink($post->ID) . '">' . __('Albums', 'utvg') . '</a><span class="utAlbCrumb"> > ' . stripslashes($meta[0]['ALB_NAME']) . '</span></div>';
+				
+					//create html for each video
+					foreach($rows as $value)
+					{
+					
+						$content .= '<div class="utThumb">
+							<a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid utRect utFbk" style="background-image: url(http://img.youtube.com/vi/' . $value['VID_URL']  . '/hqdefault.jpg);">
+								<span class="utPlayBtn"></span>
+							</a>
+							<span>' . stripslashes($value['VID_NAME']) . '</span>
+						</div>';
+						
+					}
+				
+				}
+				//if the video album is empty
+				else
+				{
+				
+					$content .= '<div class="utBreadcrumbs"><a href="' . get_permalink($post->ID) . '">' . __('Go Back', 'utvg') . '</a></div>';
+					
+					$content .= '<p>' . __('Sorry... there appear to be no videos for this album yet.', 'utvg') . '</p>';
 					
 				}
 			
 			}
-			//if the video album is empty :(//
+			//display video albums
 			else
 			{
 			
-				$content .= '<div class="utBreadcrumbs"><a href="' . substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) . '">Albums</a></div>';
+				//get video albums in the gallery
+				$rows = $wpdb->get_results('SELECT ' . $wpdb->prefix . 'utubevideo_album.ALB_ID, ALB_SLUG, ALB_NAME, ALB_THUMB, VID_THUMBTYPE FROM ' . $wpdb->prefix . 'utubevideo_album LEFT JOIN ' . $wpdb->prefix . 'utubevideo_video ON ALB_THUMB = VID_URL WHERE DATA_ID = ' . $id . ' ORDER BY ' . $wpdb->prefix . 'utubevideo_album.ALB_ID', ARRAY_A);
 				
-				$content .= '<p>Sorry... there appear to be no videos for this album yet.</p>';
+				//if there are video albums in the gallery
+				if(!empty($rows))
+				{
+			
+					//if skipalbums in set to true
+					if(isset($skipalbums) && $skipalbums == 'true')
+					{
+
+						//build array of album ids
+						foreach($rows as $idval)
+							$alids[] = $idval['ALB_ID'];
 				
+						//implode ids to string
+						$alids = implode(', ', $alids);
+						//get video info for each all albums in gallery
+						$vids = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID IN ('  . $alids . ') ORDER BY VID_UPDATEDATE', ARRAY_A);
+
+						//create html for all videos in gallery
+						foreach($vids as $value)
+						{
+							
+							$content .= '<div class="utThumb">
+								<a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid utRect utFbk" style="background-image: url(http://img.youtube.com/vi/' . $value['VID_URL']  . '/hqdefault.jpg);">
+								<span class="utPlayBtn"></span>
+								</a>
+								<span>' . stripslashes($value['VID_NAME']) . '</span>
+							</div>';
+								
+						}
+			
+					}
+					//if skipalbums is not set to true
+					else
+					{
+					
+						//create html for each video album
+						foreach($rows as $value)
+						{
+							
+							//use permalinks for pages, else use GET parameters
+							if(is_page())
+							{
+							
+								$pagename = get_query_var('pagename');
+							
+								$content .= '<div class="utThumb utAlbum">
+									<a href="' . get_site_url() . '/' . $pagename . '/album/' . $value['ALB_SLUG'] . '/" class="utRect">
+										<img src="http://img.youtube.com/vi/' . $value['ALB_THUMB']  . '/hqdefault.jpg"/>
+									</a>
+									<span>' . stripslashes($value['ALB_NAME']) . '</span>
+								</div>';
+							
+							}
+							else
+							{
+							
+								$content .= '<div class="utThumb utAlbum">
+									<a href="?aid=' . $value['ALB_ID'] . '_' . $id . '" class="utRect">
+										<img src="http://img.youtube.com/vi/' . $value['ALB_THUMB']  . '/hqdefault.jpg"/>
+									</a>
+									<span>' . stripslashes($value['ALB_NAME']) . '</span>
+								</div>';
+							
+							}
+								
+						}
+				
+					}
+					
+				}
+				//if there are no video albums in the gallery
+				else
+					$content .= '<p>' . __('Sorry... there appear to be no video albums yet.', 'utvg') . '</p>';
+			
 			}
 		
 		}
-		//display video albums//
 		else
 		{
 		
-			//get video albums in the gallery//
-			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $id . ' ORDER BY ALB_ID', ARRAY_A);
-			
-			//if there are video albums in the gallery//
-			if(!empty($rows))
+			$dir = wp_upload_dir();
+			$dir = $dir['baseurl'];
+		
+			//display videos from album
+			if($valid)
 			{
-		
-				//if skipalbums in set to true//
-				if(isset($skipalbums) && $skipalbums == 'true')
-				{
-
-					//build array of album ids//
-					foreach($rows as $idval)
-						$alids[] = $idval['ALB_ID'];
 			
-					//implode ids to string//
-					$alids = implode(', ', $alids);
-					//get video info for each all albums in gallery//
-					$vids = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID IN ('  . $alids . ') ORDER BY VID_UPDATEDATE', ARRAY_A);
-
-					//create html for all videos in gallery//
-					foreach($vids as $value)
-					{
-						
-						$content .= '<div class="utThumb"><a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid"><img src="' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg"/></a><span>' . stripslashes($value['VID_NAME']) . '</span></div>';
-							
-					}
-		
-				}
-				//if skipalbums is not set to true//
-				else
+				//get name of video album
+				$meta = $wpdb->get_results('SELECT ALB_NAME, ALB_SORT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $aid, ARRAY_A);
+			
+				//get videos in album
+				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $aid . ' ORDER BY VID_UPDATEDATE ' . $meta[0]['ALB_SORT'], ARRAY_A);
+				
+				global $post;
+				
+				//if there are videos in the video album
+				if(!empty($rows))
 				{
-
-					//create html for each video album//
+				
+					//create html for breadcrumbs
+					$content .= '<div class="utBreadcrumbs"><a href="' . get_permalink($post->ID) . '">' . __('Albums', 'utvg') . '</a><span class="utAlbCrumb"> > ' . stripslashes($meta[0]['ALB_NAME']) . '</span></div>';
+				
+					//create html for each video
 					foreach($rows as $value)
 					{
+					
+						$content .= '<div class="utThumb">
+							<a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid ' . ($value['VID_THUMBTYPE'] == 'square' ? 'utSquare' : 'utRect') . '" style="background-image: url(' . $dir . '/utubevideo-cache/' . $value['VID_URL'] . '.jpg);">
+								<span class="utPlayBtn"></span>
+							</a>
+							<span>' . stripslashes($value['VID_NAME']) . '</span>
+						</div>';
 						
-						$content .= '<div class="utThumb"><a href="?aid=' . $value['ALB_ID'] . '_' . $id . '"><img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/></a><span>' . stripslashes($value['ALB_NAME']) . '</span></div>';
-							
 					}
-			
-				}
 				
+				}
+				//if the video album is empty
+				else
+				{
+				
+					$content .= '<div class="utBreadcrumbs"><a href="' . get_permalink($post->ID) . '">' . __('Go Back', 'utvg') . '</a></div>';
+					
+					$content .= '<p>' . __('Sorry... there appear to be no videos for this album yet.', 'utvg') . '</p>';
+					
+				}
+			
 			}
-			//if there are no video albums in the gallery :(//
+			//display video albums
 			else
 			{
 			
-				$content .= '<p>Sorry... there appear to be no video albums yet.</p>';
+				//get video albums in the gallery
+				$rows = $wpdb->get_results('SELECT ' . $wpdb->prefix . 'utubevideo_album.ALB_ID, ALB_SLUG, ALB_NAME, ALB_THUMB, VID_THUMBTYPE FROM ' . $wpdb->prefix . 'utubevideo_album LEFT JOIN ' . $wpdb->prefix . 'utubevideo_video ON ALB_THUMB = VID_URL WHERE DATA_ID = ' . $id . ' ORDER BY ' . $wpdb->prefix . 'utubevideo_album.ALB_ID', ARRAY_A);
 				
+				//if there are video albums in the gallery
+				if(!empty($rows))
+				{
+			
+					//if skipalbums in set to true
+					if(isset($skipalbums) && $skipalbums == 'true')
+					{
+
+						//build array of album ids
+						foreach($rows as $idval)
+							$alids[] = $idval['ALB_ID'];
+				
+						//implode ids to string//
+						$alids = implode(', ', $alids);
+						//get video info for each all albums in gallery//
+						$vids = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID IN ('  . $alids . ') ORDER BY VID_UPDATEDATE', ARRAY_A);
+
+						//create html for all videos in gallery
+						foreach($vids as $value)
+						{
+							
+							$content .= '<div class="utThumb">
+								<a href="http://www.youtube.com/embed/' . $value['VID_URL'] . '?rel=0&showinfo=0&autohide=1&autoplay=1&iv_load_policy=3&color=' . $this->_options['playerProgressColor'] . '&vq=' . $value['VID_QUALITY'] . '" title="' . stripslashes($value['VID_NAME']) . '" class="utFancyVid ' . ($value['VID_THUMBTYPE'] == 'square' ? 'utSquare' : 'utRect') . '" style="background-image: url(' . $dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg);">
+								<span class="utPlayBtn"></span>
+								</a>
+								<span>' . stripslashes($value['VID_NAME']) . '</span>
+							</div>';
+								
+						}
+			
+					}
+					//if skipalbums is not set to true
+					else
+					{
+					
+						//create html for each video album
+						foreach($rows as $value)
+						{
+							
+							//use permalinks for pages, else use GET parameters
+							if(is_page())
+							{
+							
+								$pagename = get_query_var('pagename');
+							
+								$content .= '<div class="utThumb utAlbum">
+									<a href="' . get_site_url() . '/' . $pagename . '/album/' . $value['ALB_SLUG'] . '/" class="' . ($value['VID_THUMBTYPE'] == 'square' ? 'utSquare' : 'utRect') . '">
+										<img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/>
+									</a>
+									<span>' . stripslashes($value['ALB_NAME']) . '</span>
+								</div>';
+							
+							}
+							else
+							{
+							
+								$content .= '<div class="utThumb utAlbum">
+									<a href="?aid=' . $value['ALB_ID'] . '_' . $id . '" class="' . ($value['VID_THUMBTYPE'] == 'square' ? 'utSquare' : 'utRect') . '">
+										<img src="' . $dir . '/utubevideo-cache/' . $value['ALB_THUMB']  . '.jpg"/>
+									</a>
+									<span>' . stripslashes($value['ALB_NAME']) . '</span>
+								</div>';
+							
+							}
+								
+						}
+				
+					}
+					
+				}
+				//if there are no video albums in the gallery
+				else
+					$content .= '<p>' . __('Sorry... there appear to be no video albums yet.', 'utvg') . '</p>';
+			
 			}
 		
 		}
 						
 		$content .= '</div>';
-
-		//return html//
+		
+		//return html
 		return $content;
 		
 	}
