@@ -1,11 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2013-07-16 17:05-0500\n"
-"PO-Revision-Date: 2013-07-16 17:06-0500\n"
+"POT-Creation-Date: 2013-08-08 00:39-0500\n"
+"PO-Revision-Date: 2013-08-08 00:40-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -84,7 +83,7 @@ msgstr ""
 msgid "ex: name of gallery"
 msgstr ""
 
-#: admin.php:153 admin.php:300 admin.php:502 admin.php:1018
+#: admin.php:153 admin.php:300 admin.php:502 admin.php:1024
 msgid "Save Changes"
 msgstr ""
 
@@ -287,140 +286,144 @@ msgstr ""
 msgid "FAQ's"
 msgstr ""
 
-#: admin.php:947
+#: admin.php:948
 msgid "Include Fancybox Scripts:"
 msgstr ""
 
-#: admin.php:949
+#: admin.php:950
 msgid "ex: check only if you need fancybox"
 msgstr ""
 
-#: admin.php:952
+#: admin.php:953
+msgid "Do not use fancy permalinks:"
+msgstr ""
+
+#: admin.php:955
+msgid "ex: check to use \"?aid=\" for album links instead of permalinks"
+msgstr ""
+
+#: admin.php:958
 msgid "Load Thumbnails from Youtube:"
 msgstr ""
 
-#: admin.php:954
+#: admin.php:960
 msgid "ex: check ONLY IF thumbnails are not showing for videos"
 msgstr ""
 
-#: admin.php:957
+#: admin.php:963
 msgid "Video Player Controlbar Color:"
 msgstr ""
 
-#: admin.php:962
+#: admin.php:968
 msgid "Red"
 msgstr ""
 
-#: admin.php:962
+#: admin.php:968
 msgid "White"
 msgstr ""
 
-#: admin.php:977
+#: admin.php:983
 msgid "ex: set the color of the player's progress bar"
 msgstr ""
 
-#: admin.php:980
+#: admin.php:986
 msgid "Max Video Player Dimensions:"
 msgstr ""
 
-#: admin.php:984 admin.php:990 admin.php:996
+#: admin.php:990 admin.php:996 admin.php:1002
 msgid "Reset"
 msgstr ""
 
-#: admin.php:985
+#: admin.php:991
 msgid "ex: max dimensions of video player"
 msgstr ""
 
-#: admin.php:988
+#: admin.php:994
 msgid "Fancybox Overlay Color:"
 msgstr ""
 
-#: admin.php:991
+#: admin.php:997
 msgid "ex: color of fancybox overlay, any hex color"
 msgstr ""
 
-#: admin.php:994
+#: admin.php:1000
 msgid "Fancybox Overlay Opacity:"
 msgstr ""
 
-#: admin.php:997
+#: admin.php:1003
 msgid "ex: opacity of fancybox overlay [ 0 - 1.0 ]"
 msgstr ""
 
-#: admin.php:1004
+#: admin.php:1010
 msgid "Ok"
 msgstr ""
 
-#: admin.php:1007
-msgid "Permalinks are not enabled"
-msgstr ""
-
-#: admin.php:1009
-msgid "Rewrite rules not set"
-msgstr ""
-
 #: admin.php:1013
-msgid "Permalink Status:"
+msgid "Permalinks are not enabled, please enable permalinks for site"
 msgstr ""
 
 #: admin.php:1015
+msgid "Rewrite rules not set, please dis-able and re-enable plugin to fix"
+msgstr ""
+
+#: admin.php:1019
+msgid "Permalink Status:"
+msgstr ""
+
+#: admin.php:1021
 msgid "ex: permalink status check"
 msgstr ""
 
-#: admin.php:1069
+#: admin.php:1076
 msgid "Oops... something went wrong or there were no changes needed"
 msgstr ""
 
-#: admin.php:1091
+#: admin.php:1098
 msgid "Gallery created"
 msgstr ""
 
-#: admin.php:1093 admin.php:1117 admin.php:1164 admin.php:1222 admin.php:1289
-#: admin.php:1401 admin.php:1459 admin.php:1509 admin.php:1561 admin.php:1598
+#: admin.php:1100 admin.php:1124 admin.php:1171 admin.php:1229 admin.php:1298
+#: admin.php:1406 admin.php:1464 admin.php:1514 admin.php:1566 admin.php:1603
 msgid "Oops... something went wrong"
 msgstr ""
 
-#: admin.php:1115
+#: admin.php:1122
 msgid "Gallery updated"
 msgstr ""
 
-#: admin.php:1162
+#: admin.php:1169
 msgid "Gallery deleted"
 msgstr ""
 
-#: admin.php:1220
+#: admin.php:1227
 msgid "Video album created"
 msgstr ""
 
-#: admin.php:1287
+#: admin.php:1296
 msgid "Video added to album"
 msgstr ""
 
-#: admin.php:1293
-msgid "Oops... something seems to be wrong with the Wordpress Image Editor"
-msgstr ""
-
-#: admin.php:1399
+#: admin.php:1404
 msgid "Playlist added to album"
 msgstr ""
 
-#: admin.php:1405
+#: admin.php:1410
 msgid "Oops... The Youtube Api seems to be down"
 msgstr ""
 
-#: admin.php:1457
+#: admin.php:1462
 msgid "Video album updated"
 msgstr ""
 
-#: admin.php:1507
+#: admin.php:1512
 msgid "Video album deleted"
 msgstr ""
 
-#: admin.php:1559
+#: admin.php:1564
 msgid "Video updated"
 msgstr ""
 
-#: admin.php:1596
+#: admin.php:1601
 msgid "Video deleted"
 msgstr ""
 

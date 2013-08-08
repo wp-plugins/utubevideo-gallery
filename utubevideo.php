@@ -4,7 +4,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.5
+Version: 1.5.1
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -183,6 +183,7 @@ if(!class_exists('utvGallery'))
 			
 			$dft['fancyboxInc'] = 'no';
 			$dft['useYtThumbs'] = 'no';
+			$dft['skipSlugs'] = 'no';
 			$dft['playerWidth'] = 950;
 			$dft['playerHeight'] = 537;
 			$dft['playerProgressColor'] = 'red';

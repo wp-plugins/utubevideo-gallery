@@ -218,7 +218,7 @@ class utvFrontend
 						{
 							
 							//use permalinks for pages, else use GET parameters
-							if(is_page())
+							if(is_page() && $this->_options['skipSlugs'] == 'no')
 							{
 							
 								$pagename = get_query_var('pagename');
@@ -352,7 +352,7 @@ class utvFrontend
 						{
 							
 							//use permalinks for pages, else use GET parameters
-							if(is_page())
+							if(is_page() && $this->_options['skipSlugs'] == 'no')
 							{
 							
 								$pagename = get_query_var('pagename');

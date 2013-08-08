@@ -950,6 +950,11 @@ class utvAdmin
 					<span class="utHint"><?php _e('ex: check only if you need fancybox', 'utvg'); ?></span>
 				</p> 
 				<p>
+					<label><?php _e('Do not use fancy permalinks:', 'utvg'); ?></label>
+					<input type="checkbox" name="skipSlugs" <?php echo ($this->_options['skipSlugs'] == 'yes' ? 'checked' : ''); ?>/>
+					<span class="utHint"><?php _e('ex: check to use "?aid=" for album links instead of permalinks', 'utvg'); ?></span>
+				</p>
+				<p>
 					<label><?php _e('Load Thumbnails from Youtube:', 'utvg'); ?></label>
 					<input type="checkbox" name="useYtThumbs" <?php echo ($this->_options['useYtThumbs'] == 'yes' ? 'checked' : ''); ?>/>
 					<span class="utHint"><?php _e('ex: check ONLY IF thumbnails are not showing for videos', 'utvg'); ?></span>
@@ -1005,9 +1010,9 @@ class utvAdmin
 					$permacheck = '<span class="utOkCode">' . __('Ok', 'utvg') . '</span>';
 						
 					if(!$wp_rewrite->using_permalinks())
-						$permacheck = '<span class="utErrorCode">' . __('Permalinks are not enabled', 'utvg') . '</span>';
+						$permacheck = '<span class="utErrorCode">' . __('Permalinks are not enabled, please enable permalinks for site', 'utvg') . '</span>';
 					elseif(!in_array('index.php?pagename=$matches[1]&albumid=$matches[2]', $wp_rewrite->wp_rewrite_rules()))
-						$permacheck = '<span class="utErrorCode">' . __('Rewrite rules not set', 'utvg') . '</span>';
+						$permacheck = '<span class="utErrorCode">' . __('Rewrite rules not set, please dis-able and re-enable plugin to fix', 'utvg') . '</span>';
 						
 					?>
 					
@@ -1045,6 +1050,7 @@ class utvAdmin
 				
 					$opts['fancyboxInc'] = (isset($_POST['fancyboxInc']) ? 'yes' : 'no');
 					$opts['useYtThumbs'] = (isset($_POST['useYtThumbs']) ? 'yes' : 'no');
+					$opts['skipSlugs'] = (isset($_POST['skipSlugs']) ? 'yes' : 'no');
 					$opts['playerProgressColor'] = htmlentities($_POST['playerProgressColor'], ENT_QUOTES);
 					$opts['fancyboxOverlayColor'] = (isset($_POST['fancyboxOverlayColor']) ? sanitize_text_field($_POST['fancyboxOverlayColor']) : '#000');
 					$opts['fancyboxOverlayOpacity'] = (isset($_POST['fancyboxOverlayOpacity']) ? sanitize_text_field($_POST['fancyboxOverlayOpacity']) : '0.85');
@@ -1267,32 +1273,30 @@ class utvAdmin
 
 						$image->save($spath);
 					
-						//insert video and update video count for album//
-						if($wpdb->insert(
-							$wpdb->prefix . 'utubevideo_video', 
-							array(
-								'VID_NAME' => $vidname,
-								'VID_URL' => $v,
-								'VID_THUMBTYPE' => $thumbType,
-								'VID_QUALITY' => $quality,
-								'VID_UPDATEDATE' => $time,
-								'ALB_ID' => $key
-							)
-						) && $wpdb->update(
-							$wpdb->prefix . 'utubevideo_album', 
-							array( 
-								'ALB_VIDCOUNT' => $vidcnt
-							), 
-							array('ALB_ID' => $key)
-						) >= 0)
-							echo '<div class="updated"><p>' . __('Video added to album', 'utvg') . '</p></div>';
-						else
-							echo '<div class="error"><p>' . __('Oops... something went wrong', 'utvg') . '</p></div>';
-
 					}
+					
+					//insert video and update video count for album//
+					if($wpdb->insert(
+						$wpdb->prefix . 'utubevideo_video', 
+						array(
+							'VID_NAME' => $vidname,
+							'VID_URL' => $v,
+							'VID_THUMBTYPE' => $thumbType,
+							'VID_QUALITY' => $quality,
+							'VID_UPDATEDATE' => $time,
+							'ALB_ID' => $key
+						)
+					) && $wpdb->update(
+						$wpdb->prefix . 'utubevideo_album', 
+						array( 
+							'ALB_VIDCOUNT' => $vidcnt
+						), 
+						array('ALB_ID' => $key)
+					) >= 0)
+						echo '<div class="updated"><p>' . __('Video added to album', 'utvg') . '</p></div>';
 					else
-						echo '<div class="error"><p>' . __('Oops... something seems to be wrong with the Wordpress Image Editor', 'utvg') . '</p></div>';
-							
+						echo '<div class="error"><p>' . __('Oops... something went wrong', 'utvg') . '</p></div>';
+								
 				}			
 		
 			}
@@ -1367,22 +1371,22 @@ class utvAdmin
 										$image->resize(150, 150);
 
 									$image->save($spath);
-									
-									$wpdb->insert(
-										$wpdb->prefix . 'utubevideo_video', 
-										array(
-											'VID_NAME' => $name,
-											'VID_URL' => $v,
-											'VID_THUMBTYPE' => $thumbType,
-											'VID_QUALITY' => $quality,
-											'VID_UPDATEDATE' => $time,
-											'ALB_ID' => $key
-										)
-									);
-									
-									$count++;
-									
+
 								}	
+								
+								$wpdb->insert(
+									$wpdb->prefix . 'utubevideo_video', 
+									array(
+										'VID_NAME' => $name,
+										'VID_URL' => $v,
+										'VID_THUMBTYPE' => $thumbType,
+										'VID_QUALITY' => $quality,
+										'VID_UPDATEDATE' => $time,
+										'ALB_ID' => $key
+									)
+								);
+									
+								$count++;
 				
 							}
 							

@@ -3,8 +3,8 @@ Contributors: dman25560
 Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
-Tested up to: 3.5.2
-Stable tag: 1.5
+Tested up to: 3.6
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Display unlimited galleries of YouTube videos in any post or page within your si
 
 == Description ==
 
-This plugin allows the displaying of galleries of YouTube videos within any post or page within your site. No API keys are necessary. Just install and start creating.
+This plugin allows the displaying of galleries of YouTube videos within any post or page within your site. Just install and start creating.
 
 Features Include:
 
@@ -97,6 +97,13 @@ If your permalink status is not Ok, it means permalinks are not enabled correctl
 3. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.5.1 =
+
+* Fixed bug with not being able to add videos when the image editor failed to save thumbnails
+* Added option to skip using slugs/permalinks for album links for those who have trouble with slugs
+* Added better status messages to "Permalink Status" 
+* Fixed bug where themes could overwrite border and margins of video thumbnails
 
 = 1.5 = 
 
