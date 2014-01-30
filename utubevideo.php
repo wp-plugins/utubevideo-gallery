@@ -4,7 +4,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.5.1
+Version: 1.6
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -64,6 +64,10 @@ if(!class_exists('utvGallery'))
 			$sql = "CREATE TABLE $tbname[0] (
 				DATA_ID int(11) NOT NULL AUTO_INCREMENT,
 				DATA_NAME varchar(40) NOT NULL,
+				DATA_THUMBWIDTH int(11) DEFAULT 150 NOT NULL,
+				DATA_THUMBPADDING int(11) DEFAULT 10 NOT NULL,
+				DATA_SORT varchar(4) DEFAULT 'desc' NOT NULL,
+				DATA_DISPLAYTYPE varchar(6) DEFAULT 'album' NOT NULL,
 				DATA_UPDATEDATE int(11) NOT NULL,
 				DATA_ALBCOUNT int(4) DEFAULT '0' NOT NULL,
 				UNIQUE KEY DATA_ID (DATA_ID)
@@ -74,6 +78,8 @@ if(!class_exists('utvGallery'))
 				ALB_SLUG varchar(50) DEFAULT '--empty--' NOT NULL,
 				ALB_THUMB varchar(40) NOT NULL,
 				ALB_SORT varchar(4) DEFAULT 'desc' NOT NULL,
+				ALB_POS int(11) NOT NULL,
+				ALB_PUBLISH int(11) DEFAULT 1 NOT NULL,
 				ALB_UPDATEDATE int(11) NOT NULL,
 				ALB_VIDCOUNT int(4) DEFAULT '0' NOT NULL,
 				DATA_ID int(11) NOT NULL,
@@ -85,6 +91,9 @@ if(!class_exists('utvGallery'))
 				VID_URL varchar(40) NOT NULL,
 				VID_THUMBTYPE varchar(9) DEFAULT 'rectangle' NOT NULL,
 				VID_QUALITY varchar(6) DEFAULT 'large' NOT NULL,
+				VID_CHROME tinyint(1) DEFAULT 1 NOT NULL,
+				VID_POS int(11) NOT NULL,
+				VID_PUBLISH int(11) DEFAULT 1 NOT NULL,
 				VID_UPDATEDATE int(11) NOT NULL,
 				ALB_ID int(11) NOT NULL,
 				UNIQUE KEY VID_ID (VID_ID)
@@ -181,8 +190,7 @@ if(!class_exists('utvGallery'))
 	
 			}
 			
-			$dft['fancyboxInc'] = 'no';
-			$dft['useYtThumbs'] = 'no';
+			$dft['skipMagnificPopup'] = 'no';
 			$dft['skipSlugs'] = 'no';
 			$dft['playerWidth'] = 950;
 			$dft['playerHeight'] = 537;

@@ -1,32 +1,40 @@
 /*FRONTEND CSS*/
 
-.utBreadcrumbs{
+.utv-breadcrumb{
 	margin-bottom: 10px;
 }
 
-.utBreadcrumbs .utAlbCrumb{
+.utv-breadcrumb .utv-albumcrumb{
 	font-weight: bold;
 }
 
-.utBreadcrumbs a{
+.utv-breadcrumb a{
 	font-size: 14px!important;
 	text-decoration: none!important;
 	font-weight: bold;
 }
 
-.utBreadcrumbs span{
+.utv-breadcrumb span{
 	font-size: 14px;
 }
 
-.utVideoContainer{
-	width: 100%; 
+.utv-container{
+	width: auto; 
 	margin: 0 auto;
 }
 
-.utVideoContainer .utAlbum img{
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-	-moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-	-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+.utv-container .utv-align-center{
+	text-align: center;
+}
+
+.utv-container .utv-align-right{
+	text-align: right;
+}
+
+.utv-container .utv-album img{
+	box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
+	-moz-box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
+	-webkit-box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
 	border-radius: 3px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
@@ -38,73 +46,87 @@
 	border: 0;
 }
 
-.utVideoContainer .utAlbum a{
-	background-color: #000;
-	display: block;
-	width: 150px;
-	height: 150px;
-	border-radius: 3px;
-}
-
-.utVideoContainer .utThumb{
+.utv-container .utv-thumb{
 	text-align: center;
 	display: inline-block; 
-	width: 150px; 
-	margin: 10px 20px;
+	margin: 10px 10px;
 	vertical-align: middle;
 	padding: 0;
 }
 
-.utVideoContainer .utThumb a.utSquare{
-	display: inline-block;
-	width: 150px;
-	height: 150px;
+.utv-container .utv-thumb a{
+	background-color: #000;
+	display: block;
+	border-radius: 3px;
+}
+
+.utv-container .utv-thumb a.utv-square{
 	position: relative;
 	border-radius: 3px;
 }
 
-.utVideoContainer .utThumb a.utRect{
-	display: inline-block;
-	width: 150px;
-	height: 112px;
+.utv-container .utv-thumb a.utv-rect{
 	position: relative;
 	border-radius: 3px;
 }
 
-.utVideoContainer .utThumb a.utFbk{
-	background-size: 150px 112px;
-}
-
-.utVideoContainer .utThumb img:hover{
+.utv-container .utv-thumb img:hover{
 	opacity: .70;
+	-moz-opacity: 0.7;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
 }
 
-.utVideoContainer .utThumb .utPlayBtn{
+.utv-container .utv-thumb .utv-play-btn{
 	position: absolute; 
 	top: 50%; 
 	left: 50%;
 	border: 0!important;
 	padding: 0!important;
 	opacity: 0;
+	-moz-opacity: 0;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	display: block;
 	width: 60px;
 	height: 60px;
+	width: 48px;
+	height: 48px;
 	margin: -30px 0 0 -30px;
+	margin: -24px 0 0 -24px;
 	background: transparent url('../i/play_icon.png') no-repeat 0 0;
 	transition: opacity .1s linear;
 	-webkit-transition: opacity .1s linear;
 }
 
-.utVideoContainer .utThumb:hover .utPlayBtn{
+.utv-container .utv-thumb:hover .utv-play-btn{
 	opacity: 0.6;
 }
 
-.utVideoContainer .utThumb span{
+.utv-container .utv-thumb span{
 	font-size: 13px;
 	display: block;
 	line-height: 1.6em;
+	margin-top: 5px;
 }
 
-.utFancyboxTitle{
-	font-size: 14px;
+.utv-mfp-bottom-bar{
+	margin-top: 10px;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	cursor: auto; 
+	font-size: 16px;
+	font-weight: normal;
+}
+
+.utv-mfp-iframe-scaler button.mfp-close:hover{
+	background-color: transparent!important;
+	border-radius: 0!important;
+	-webkit-border-radius: 0!important;
+	-moz-border-radius: 0!important;
+	outline: none!important;
+}
+
+.utv-mfp-iframe-scaler button.mfp-close:focus, .ut-mft-iframe-scaler button.mfp-close{
+	outline: none!important;
 }

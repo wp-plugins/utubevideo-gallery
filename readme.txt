@@ -3,8 +3,8 @@ Contributors: dman25560
 Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
-Tested up to: 3.8
-Stable tag: 1.5.1
+Tested up to: 3.8.1
+Stable tag: 1.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,20 +16,21 @@ This plugin allows the displaying of galleries of YouTube videos within any post
 
 Features Include:
 
-- Unlimited video galleries.
-- Built in Fancybox support with options to use Fancybox already installed by another plugin.
-- Thumbnail images for videos are cached on your own website.
-- Annotations are hidden automatically for a movie like experience.
+- Unlimited video galleries
+- Built in Magnific Popup support with options to use Magnific Popup already installed by another plugin
+- Thumbnail images for videos are cached on your own website
+- Annotations are hidden automatically for a movie like experience
 - Set size of video player
 - Set progress bar color of video player
 - Set starting resolution of videos (480p, 720p, or 1080p)
-- Order video albums by newest or oldest videos first
+- Order video albums by newest or oldest videos first, as well as custom re-ordering of videos / albums
 - Possiblity of skipping video albums and just display videos
 - Set video thumbnails as either square or rectangle
 - View counts of video albums and videos within a gallery in the backend
-- Add youtube playlists to an album
-- Fallback to use Youtube thumbnails if images are not saving correctly
+- Add YouTube playlists to an album
 - Permalinks for galleries embedded within a page
+- Publish and un-publish videos and albums without having to delete them
+- Ability to set padding and width of album / video thumbnails
 
 == Installation ==
 
@@ -46,17 +47,13 @@ Features Include:
 
 Unlimited.
 
+= Can I use any YouTube video? =
+
+Generally, yes, except in cases where the video it set to disable embedding.
+
 = Are Vevo youtube videos supported? = 
 
 Yes, all youtube videos should work unless embedding has been disabled.
-
-= Can I use any version of Fancybox? =
-
-Only Fancybox v1 is supported due to conflicts in the licence for Fancbox v2.
-
-= Should I include the Fancybox scripts in the adminstrative panel for uTubeVideo Gallery? = 
-
-Only include the Fancybox scripts if you do not have another Fancybox plugin in use.
 
 = Are any other types of videos supported (ie not youtube)? =
 
@@ -76,7 +73,7 @@ After adding at least one video to the album click on the edit link for the vide
 
 = How do I just display videos with no albums? = 
 
-After creating a gallery, at least one album, and adding videos to the album add --skipalbums="true"-- to the shortcode where you are embedding the gallery.
+There is an option called Display Type in each gallery's settings; set it to Just Videos.
 
 = How big of a playlist can I add to an album at a time? =
 
@@ -88,15 +85,32 @@ If your thumbnails are not displaying or if you are getting a image editor error
 
 = What if my Permalink Status is NOT Ok? = 
 
-If your permalink status is not Ok, it means permalinks are not enabled correctly. Check to see that you have permalinks turned on for Wordpress and if this does not fix the problem, deactivate and reactivate this plugin.
+If your permalink status is not Ok, it means permalinks are not enabled correctly. Check to see that you have permalinks turned on for Wordpress and if this does not fix the problem, de-activate and re-activate this plugin. It's also possible your the settings for your sites permalink structure are not completely compatible with this plugin.
 
 == Screenshots ==
 
 1. A gallery embedded on a page showing the videos in an album
 2. A gallery showing a video playing
-3. A listing of videos in the administration panel
+3. A gallery showing a video playing (chromeless)
+4. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.6 =
+
+* Added ability to customize size and padding of thumbnails
+* Replaced Fancybox lightbox with Magnific Popup, a faster responsive lightbox
+* Tweaked front-end ui
+* Admin - added button to fix broken permalink issues
+* Admin - added album sorting feature
+* Admin - moved skipalbums into each galleries settings, instead of a shortcode option
+* Admin - added ability to publish and un-publish videos and albums
+* Admin - added ability to drag / sort video and album order
+* Admin - admin tables are now sortable, by attributes such as: Name, Published, Date Added, etc.
+* Admin - added client side error checking to all forms / as well as fixed server side bugs
+* Created documentation page on website regarding plugin
+* Removed YouTube hack for thumbnails that would not save, finally figured out what the issue was.
+
 
 = 1.5.1 =
 
