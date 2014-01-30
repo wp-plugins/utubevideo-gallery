@@ -1298,7 +1298,7 @@ class utvAdmin
 				<div class="inside">
 					<div class="utv-formbox">
 						<ul>
-							<li>For extra help with using uTubeVideo Gallery visit the <a href="">documentation page</a>.</li>
+							<li>For extra help with using uTubeVideo Gallery visit the <a href="http://www.codeclouds.net/utubevideo-gallery-documentation/" target="_blank">documentation page</a>.</li>
 							<li>For any additional help or issues you may also contact me at <a href="mailto:dustin@codeclouds.net">dustin@codeclouds.net</a> or <a hef="http://codeclouds.net/contact/">via my website</a>.</li>
 						</ul>
 					</div>
