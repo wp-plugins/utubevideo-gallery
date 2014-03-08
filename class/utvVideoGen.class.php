@@ -70,8 +70,6 @@ class utvVideoGen
 			//get name of video album
 			$meta = $wpdb->get_results('SELECT ALB_NAME, ALB_SORT, ALB_PUBLISH FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $this->_aid, ARRAY_A);
 			
-			echo $meta[0]['ALB_SORT'];
-		
 			//get videos in album
 			if($meta != null && $meta[0]['ALB_PUBLISH'] == 1)
 				$data = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $this->_aid . ' && VID_PUBLISH = 1 ORDER BY VID_POS ' . $meta[0]['ALB_SORT'], ARRAY_A);

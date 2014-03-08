@@ -121,6 +121,7 @@
 
 .utv-mfp-iframe-scaler button.mfp-close:hover{
 	background-color: transparent!important;
+	background-image: none!important;
 	border-radius: 0!important;
 	-webkit-border-radius: 0!important;
 	-moz-border-radius: 0!important;

@@ -4,7 +4,7 @@ Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube
 Requires at least: 3.0.1
 Tested up to: 3.8.1
-Stable tag: 1.6
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,12 @@ If your permalink status is not Ok, it means permalinks are not enabled correctl
 4. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.6.1 =
+
+* Fixed a css bug when hovering over player close button
+* Removed overlooked stray code bits
+* Discovered bug with upgrade, de-activate and re-activation seems to fix
 
 = 1.6 =
 
