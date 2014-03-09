@@ -119,6 +119,12 @@
 	font-weight: normal;
 }
 
+.utv-mfp-iframe-scaler button.mfp-close{
+	background-color: transparent!important;
+	background-image: none!important;
+	outline: none!important;
+}
+
 .utv-mfp-iframe-scaler button.mfp-close:hover{
 	background-color: transparent!important;
 	background-image: none!important;

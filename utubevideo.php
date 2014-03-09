@@ -4,7 +4,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.6.1
+Version: 1.6.2
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -39,12 +39,34 @@ if(!class_exists('utvGallery'))
 
 			//load external files
 			$this->load_dependencies();
-		
+			
+			//load options
+			$this->_options = get_option('utubevideo_main_opts');
+			
+			//call init update script
+			$this->init();
+
 			//activation hook
 			register_activation_hook(__FILE__, array(&$this, 'activate'));
 		
 			add_filter('query_vars', array(&$this, 'insert_query_vars'));
 				
+		}
+		
+		//version check for updates
+		private function init()
+		{
+
+			if(!isset($this->_options['version']) || $this->_options['version'] != '1.6.2')
+			{
+			
+				activate();
+				$dft['version'] = '1.6.2';
+				$opts = $this->_options + $dft;
+				update_option('utubevideo_main_opts', $opts);
+				
+			}
+		
 		}
 		
 		//activate plugin
@@ -102,14 +124,13 @@ if(!class_exists('utvGallery'))
 			dbDelta($sql);
 			
 			//set up main option defaults if needed
-			$main = get_option('utubevideo_main_opts');
-			
+		
 			//initalize main if empty
-			if(empty($main))
-				$main = array();
+			if(empty($this->_options))
+				$this->_options = array();
 		
 			//count videos if not done yet
-			if(!isset($main['countSet']))
+			if(!isset($this->_options['countSet']))
 			{
 			
 				$galids = $wpdb->get_results('SELECT DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_dataset', ARRAY_A);
@@ -151,7 +172,7 @@ if(!class_exists('utvGallery'))
 			}
 			
 			//set slugs if not set yet
-			if(!isset($main['setSlugs']))
+			if(!isset($this->_options['setSlugs']))
 			{
 			
 				$mark = 1;
@@ -164,7 +185,7 @@ if(!class_exists('utvGallery'))
 				
 					$slug = strtolower($value['ALB_NAME']);
 					$slug = str_replace(' ', '-', $slug);
-					$slug = html_entity_decode($slug, ENT_QUOTES);
+					$slug = html_entity_decode($slug, ENT_QUOTES, 'UTF-8');
 					$slug = preg_replace("/[^a-zA-Z0-9-]+/", "", $slug);
 					
 					if(!empty($sluglist))
@@ -198,14 +219,13 @@ if(!class_exists('utvGallery'))
 			$dft['fancyboxOverlayOpacity'] = '0.85';
 			$dft['fancyboxOverlayColor'] = '#000';
 			
-			$opts = $main + $dft;
+			$opts = $this->_options + $dft;
 			
 			update_option('utubevideo_main_opts', $opts);
 			
 			//create photo cache directory if needed
 			$dir = wp_upload_dir();
 			$dir = $dir['basedir'];
-			
 			wp_mkdir_p($dir . '/utubevideo-cache');
 			
 			//copy 'missing.jpg' into cache directory
@@ -218,6 +238,8 @@ if(!class_exists('utvGallery'))
 			$wp_rewrite->flush_rules();
 			
 		}
+		
+		
 		
 		//load dependencies for plugin
 		private function load_dependencies()
@@ -272,6 +294,6 @@ if(!class_exists('utvGallery'))
 	}
 
 	$utvg = new utvGallery();
-
+	
 }
 ?>

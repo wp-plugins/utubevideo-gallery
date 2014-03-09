@@ -1480,7 +1480,7 @@ class utvAdmin
 				
 					$opts['skipMagnificPopup'] = (isset($_POST['skipMagnificPopup']) ? 'yes' : 'no');
 					$opts['skipSlugs'] = (isset($_POST['skipSlugs']) ? 'yes' : 'no');
-					$opts['playerProgressColor'] = htmlentities($_POST['playerProgressColor'], ENT_QUOTES);
+					$opts['playerProgressColor'] = htmlentities($_POST['playerProgressColor'], ENT_QUOTES, 'UTF-8');
 					$opts['fancyboxOverlayColor'] = (isset($_POST['fancyboxOverlayColor']) ? sanitize_text_field($_POST['fancyboxOverlayColor']) : '#000');
 					$opts['fancyboxOverlayOpacity'] = (isset($_POST['fancyboxOverlayOpacity']) ? sanitize_text_field($_POST['fancyboxOverlayOpacity']) : '0.85');
 						
@@ -1514,11 +1514,11 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_save_gallery'))
 				{
 				
-					$shortname = htmlentities($_POST['galleryName'], ENT_QUOTES);
-					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES);
-					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES);
-					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES);
-					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES);
+					$shortname = htmlentities($_POST['galleryName'], ENT_QUOTES, 'UTF-8');
+					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES, 'UTF-8');
+					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES, 'UTF-8');
+					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES, 'UTF-8');
+					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES, 'UTF-8');
 					$time = current_time('timestamp');
 					
 					if(empty($shortname) || empty($albumsort) || empty($displaytype) || !isset($thumbwidth) || !isset($thumbpadding))
@@ -1562,12 +1562,12 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_gallery'))
 				{
 				
-					$galname = htmlentities($_POST['galname'], ENT_QUOTES);
-					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES);
-					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES);
-					$oldthumbwidth = htmlentities($_POST['oldThumbWidth'], ENT_QUOTES);
-					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES);
-					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES);
+					$galname = htmlentities($_POST['galname'], ENT_QUOTES, 'UTF-8');
+					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES, 'UTF-8');
+					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES, 'UTF-8');
+					$oldthumbwidth = htmlentities($_POST['oldThumbWidth'], ENT_QUOTES, 'UTF-8');
+					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES, 'UTF-8');
+					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES, 'UTF-8');
 					$key = sanitize_text_field($_POST['key']);
 					
 					if(empty($galname) || !isset($key) || !isset($thumbwidth) || !isset($thumbpadding) || !isset($oldthumbwidth) || empty($albumsort) || empty($displaytype))
@@ -1663,7 +1663,7 @@ class utvAdmin
 				{
 				
 					$key = sanitize_text_field($_GET['id']);
-					$alname = htmlentities($_POST['alname'], ENT_QUOTES);	
+					$alname = htmlentities($_POST['alname'], ENT_QUOTES, 'UTF-8');	
 					$vidsort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');	
 
 					if(empty($alname) || empty($vidsort) || !isset($key))
@@ -1726,9 +1726,9 @@ class utvAdmin
 				{
 						
 					$url = sanitize_text_field($_POST['url']);
-					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES);
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES);
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES);
+					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES, 'UTF-8');
+					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
+					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
 					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
 					$key = sanitize_text_field($_POST['key']);
 					
@@ -1817,8 +1817,8 @@ class utvAdmin
 				{
 				
 					$url = sanitize_text_field($_POST['url']);
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES);
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES);
+					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
+					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
 					$key = sanitize_text_field($_POST['key']);
 					
 					if(empty($url) || empty($thumbType) || empty($quality) || !isset($key))
@@ -1945,7 +1945,7 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_album'))
 				{
 				
-					$alname = htmlentities($_POST['alname'], ENT_QUOTES);
+					$alname = htmlentities($_POST['alname'], ENT_QUOTES, 'UTF-8');
 					$vidsort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');	
 					$thumb = (isset($_POST['albumThumbSelect']) ? $_POST['albumThumbSelect'] : 'missing');
 					$prevslug = $_POST['prevSlug'];
@@ -2008,9 +2008,9 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_video'))
 				{
 				
-					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES);
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES);
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES);
+					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES, 'UTF-8');
+					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
+					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
 					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
 					$key = sanitize_text_field($_POST['key']);
 					
