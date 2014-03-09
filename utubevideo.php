@@ -44,7 +44,7 @@ if(!class_exists('utvGallery'))
 			$this->_options = get_option('utubevideo_main_opts');
 			
 			//call init update script
-			$this->init();
+			//$this->init();
 
 			//activation hook
 			register_activation_hook(__FILE__, array(&$this, 'activate'));
@@ -54,7 +54,7 @@ if(!class_exists('utvGallery'))
 		}
 		
 		//version check for updates
-		private function init()
+		/*private function init()
 		{
 
 			if(!isset($this->_options['version']) || $this->_options['version'] != '1.6.2')
@@ -67,7 +67,7 @@ if(!class_exists('utvGallery'))
 				
 			}
 		
-		}
+		}*/
 		
 		//activate plugin
 		public function activate()
