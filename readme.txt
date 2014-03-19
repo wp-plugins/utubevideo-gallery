@@ -79,10 +79,6 @@ There is an option called Display Type in each gallery's settings; set it to Jus
 
 Do to script timeouts and such it seems around 80 videos is the limit, but you will have to experiment to find what works best for you.
 
-= What should I do if my thumbnails are not displaying? =
-
-If your thumbnails are not displaying or if you are getting a image editor error you can check the "Load Thumbnails from Youtube" in the settings to load thumbnails directly from Youtube. However all thumbnails will be rectangular when using this option; square thumbnails will be ignored.
-
 = What if my Permalink Status is NOT Ok? = 
 
 If your permalink status is not Ok, it means permalinks are not enabled correctly. Check to see that you have permalinks turned on for Wordpress and if this does not fix the problem, de-activate and re-activate this plugin. It's also possible your the settings for your sites permalink structure are not completely compatible with this plugin.
