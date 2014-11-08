@@ -19,36 +19,81 @@ class utvFrontend
 		$this->_options = get_option('utubevideo_main_opts');
 			
 		//add hooks
-		add_shortcode('utubevideo', array(&$this, 'shortcode'));
-		add_action('wp_print_footer_scripts', array(&$this, 'setupLightbox'));
-		add_action('wp_enqueue_scripts', array(&$this, 'addStyles'));
+		add_shortcode('utubevideo', array($this, 'shortcode'));
+		add_action('wp_print_footer_scripts', array($this, 'addJS'));
+		add_action('wp_enqueue_scripts', array($this, 'addStyles'));
 		
 		//check for extra lightbox script inclusion
 		if($this->_options['skipMagnificPopup'] == 'no')
-			add_action('wp_enqueue_scripts', array(&$this, 'addLightboxScripts'));
+			add_action('wp_enqueue_scripts', array($this, 'addLightboxScripts'));
 		
 	}
-		
+	
+	//insert styles for galleries
 	public function addStyles()
 	{
 		
 		//load frontend styles
 		wp_enqueue_style('utv_style', plugins_url('css/front_style.min.css', __FILE__), false, null);
-			
+		
+		if($this->_options['thumbnailBorderRadius'] > 0){
+		
+			$css = '.utv-thumb a, .utv-thumb img{border-radius:' . $this->_options['thumbnailBorderRadius'] . 'px!important;-moz-border-radius:' . $this->_options['thumbnailBorderRadius'] . 'px!important;-webkit-border-radius:' . $this->_options['thumbnailBorderRadius'] . 'px!important}';
+			wp_add_inline_style('utv_style', $css);
+		}
 	}
 		
-	//setup fancybox call for video galleries
-	public function setupLightbox()
+	//insert javascript for galleries
+	public function addJS()
 	{
    
 	?>
 
 		<script>
+		
+			var utv_vars = {
+				galleries: new Array(),
+				thumbwidth: <?php echo $this->_options['thumbnailWidth']; ?>,
+				thumbpadding: <?php echo $this->_options['thumbnailPadding']; ?>
+			}
+			
+			function utvGallery(outercontainer, innercontainer){
+			
+				this.outercontainer = outercontainer;
+				this.innercontainer = innercontainer;
+			}
+			
+			function setupGalleryObjects(containers){
+			
+				containers.each(function(){
+					var outercontainer = jQuery(this);
+					var innercontainer = outercontainer.find('.utv-inner-wrapper');		
+					utv_vars.galleries.push(new utvGallery(outercontainer, innercontainer));
+				});
+				
+				setGalleryFlow();
+				
+				containers.each(function(){
+					jQuery(this).css('visibility', 'visible');
+				});
+			}
+			
+			function setGalleryFlow(){
+			
+				for(var i = 0; i < utv_vars.galleries.length; i++){
+					var outerwidth = utv_vars.galleries[i].outercontainer.width();
+					var blocks = Math.floor(outerwidth / (utv_vars.thumbwidth + (utv_vars.thumbpadding * 2)));
+					var size = (utv_vars.thumbwidth + (utv_vars.thumbpadding * 2)) * blocks;
+					utv_vars.galleries[i].innercontainer.css('width', size + 'px');
+				}
+			}
 			
 			jQuery(function(){
+			
+				var containers = jQuery('.utv-container');
 
-				jQuery('a.utv-popup').click(function(){
-				
+				containers.on('click', 'a.utv-popup', function(){
+			
 					var url = jQuery(this).attr('href');
 					var title = jQuery(this).attr('title');
 					
@@ -59,7 +104,7 @@ class utvFrontend
 							patterns: false,
 							markup: '<div class="utv-mfp-iframe-scaler mfp-iframe-scaler">'+
 								'<div class="mfp-close"></div>'+
-								'<iframe class="mfp-iframe" frameborder="0" allowfullscreen></iframe>'+
+								'<iframe class="mfp-iframe" frameborder="0" width="<?php echo $this->_options['playerWidth']; ?>" height="<?php echo $this->_options['playerHeight']; ?>" allowfullscreen></iframe>'+
 								'</div><div class="utv-mfp-bottom-bar">'+
 								'<div class="mfp-title"></div></div>'
 						},
@@ -78,7 +123,15 @@ class utvFrontend
 					return false;
 				
 				});
+				
+				setupGalleryObjects(containers);
 
+			});
+			
+			jQuery(window).resize(function(){
+			
+				if(utv_vars.galleries.length > 0)
+					setGalleryFlow();
 			});
 
 		</script>
@@ -92,8 +145,8 @@ class utvFrontend
 		
 		//load jquery and lightbox js / css
 		wp_enqueue_script('jquery');	
-		wp_enqueue_script('js', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.3/jquery.magnific-popup.min.js', array('jquery'), null, true);
-		wp_enqueue_style('css', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.3/magnific-popup.css', false, null);
+		wp_enqueue_script('js', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.9/jquery.magnific-popup.min.js', array('jquery'), null, true);
+		wp_enqueue_style('css', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.9/magnific-popup.css', false, null);
 	
 	}
 		

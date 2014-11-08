@@ -21,6 +21,12 @@
 .utv-container{
 	width: auto; 
 	margin: 0 auto;
+	visibility: hidden;
+}
+
+.utv-inner-wrapper{
+	text-align: left; 
+	display: inline-block;
 }
 
 .utv-container .utv-align-center{
@@ -35,9 +41,6 @@
 	box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
 	-moz-box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
 	-webkit-box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.6);
-	border-radius: 3px;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
 	background: none!important;
 	transition: opacity .2s ease-in-out;
 	-webkit-transition: opacity .2s ease-in-out;
@@ -47,27 +50,23 @@
 }
 
 .utv-container .utv-thumb{
-	text-align: center;
 	display: inline-block; 
 	margin: 10px 10px;
-	vertical-align: middle;
+	vertical-align: top;
 	padding: 0;
 }
 
 .utv-container .utv-thumb a{
 	background-color: #000;
 	display: block;
-	border-radius: 3px;
 }
 
 .utv-container .utv-thumb a.utv-square{
 	position: relative;
-	border-radius: 3px;
 }
 
 .utv-container .utv-thumb a.utv-rect{
 	position: relative;
-	border-radius: 3px;
 }
 
 .utv-container .utv-thumb img:hover{
@@ -105,7 +104,14 @@
 	font-size: 13px;
 	display: block;
 	line-height: 1.6em;
-	margin-top: 5px;
+	margin-top: 4px;
+	margin-left: 5px;
+}
+
+.utv-roundborder a{
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
 }
 
 .utv-mfp-bottom-bar{

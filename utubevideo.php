@@ -4,7 +4,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.6.2
+Version: 1.7
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -33,6 +33,7 @@ if(!class_exists('utvGallery'))
 	{
 	
 		private $_utvadmin, $_utvfrontend, $_options;
+		const CURRENT_VERSION = '1.7';
 	
 		public function __construct()
 		{
@@ -43,34 +44,76 @@ if(!class_exists('utvGallery'))
 			//load options
 			$this->_options = get_option('utubevideo_main_opts');
 			
-			//call init update script
-			//$this->init();
+			//call upgrade check 
+			$this->upgrade_check();
 
 			//activation hook
 			register_activation_hook(__FILE__, array(&$this, 'activate'));
 		
 			add_filter('query_vars', array(&$this, 'insert_query_vars'));
-				
+						
+		}
+
+		//activate plugin
+		public function activate()
+		{
+		
+			$this->maintenance();
+			
+		}
+		
+		//rewrite rules setup function
+		public function setup_rewrite_rules()
+		{
+		
+			//setup rewrite rule for video albums
+			add_rewrite_rule('([^/]+)/album/([^/]+)$', 'index.php?pagename=$matches[1]&albumid=$matches[2]', 'top');
+			
+			global $wp_rewrite;
+			$wp_rewrite->flush_rules();
+		
 		}
 		
 		//version check for updates
-		/*private function init()
+		private function upgrade_check()
 		{
 
-			if(!isset($this->_options['version']) || $this->_options['version'] != '1.6.2')
+			if(!isset($this->_options['version']) || $this->_options['version'] < self::CURRENT_VERSION)
 			{
 			
-				activate();
-				$dft['version'] = '1.6.2';
-				$opts = $this->_options + $dft;
-				update_option('utubevideo_main_opts', $opts);
+				$this->maintenance();
+				$this->_options['version'] = self::CURRENT_VERSION;
+				update_option('utubevideo_main_opts', $this->_options);
 				
 			}
 		
-		}*/
+		}
 		
-		//activate plugin
-		public function activate()
+		//load dependencies for plugin
+		private function load_dependencies()
+		{
+		
+			load_plugin_textdomain('utvg', false, 'utubevideo-gallery/language');
+		
+			//load backend or frontend dependencies
+			if(is_admin())
+			{
+			
+				require dirname(__FILE__) . '/admin.php';
+				$this->_utvadmin = new utvAdmin();
+
+			}
+			else
+			{
+			
+				require dirname(__FILE__) . '/frontend.php';
+				$this->_utvfrontend = new utvFrontend();
+			
+			}
+		
+		}
+		
+		private function maintenance()
 		{
 		
 			//set up globals
@@ -86,8 +129,6 @@ if(!class_exists('utvGallery'))
 			$sql = "CREATE TABLE $tbname[0] (
 				DATA_ID int(11) NOT NULL AUTO_INCREMENT,
 				DATA_NAME varchar(40) NOT NULL,
-				DATA_THUMBWIDTH int(11) DEFAULT 150 NOT NULL,
-				DATA_THUMBPADDING int(11) DEFAULT 10 NOT NULL,
 				DATA_SORT varchar(4) DEFAULT 'desc' NOT NULL,
 				DATA_DISPLAYTYPE varchar(6) DEFAULT 'album' NOT NULL,
 				DATA_UPDATEDATE int(11) NOT NULL,
@@ -109,6 +150,7 @@ if(!class_exists('utvGallery'))
 			);
 			CREATE TABLE $tbname[2] (
 				VID_ID int(11) NOT NULL AUTO_INCREMENT,
+				VID_SOURCE varchar(15) DEFAULT 'youtube' NOT NULL,
 				VID_NAME varchar(50) NOT NULL,
 				VID_URL varchar(40) NOT NULL,
 				VID_THUMBTYPE varchar(9) DEFAULT 'rectangle' NOT NULL,
@@ -215,13 +257,18 @@ if(!class_exists('utvGallery'))
 			$dft['skipSlugs'] = 'no';
 			$dft['playerWidth'] = 950;
 			$dft['playerHeight'] = 537;
+			$dft['playerControlTheme'] = 'dark';
 			$dft['playerProgressColor'] = 'red';
 			$dft['fancyboxOverlayOpacity'] = '0.85';
 			$dft['fancyboxOverlayColor'] = '#000';
+			$dft['thumbnailWidth'] = 150;
+			$dft['thumbnailPadding'] = 10;
+			$dft['thumbnailBorderRadius'] = 3;
+			$dft['version'] = self::CURRENT_VERSION;
 			
-			$opts = $this->_options + $dft;
+			$this->_options = $this->_options + $dft;
 			
-			update_option('utubevideo_main_opts', $opts);
+			update_option('utubevideo_main_opts', $this->_options);
 			
 			//create photo cache directory if needed
 			$dir = wp_upload_dir();
@@ -231,38 +278,9 @@ if(!class_exists('utvGallery'))
 			//copy 'missing.jpg' into cache directory
 			copy(plugins_url('missing.jpg', __FILE__), $dir . '/utubevideo-cache/missing.jpg');
 			
-			//setup rewrite rule for video albums
-			add_rewrite_rule('([^/]+)/album/([^/]+)$', 'index.php?pagename=$matches[1]&albumid=$matches[2]', 'top');
+			//add rewrite rules to rewrite engine
+			add_action('init', array(&$this, 'setup_rewrite_rules'));
 			
-			global $wp_rewrite;
-			$wp_rewrite->flush_rules();
-			
-		}
-		
-		
-		
-		//load dependencies for plugin
-		private function load_dependencies()
-		{
-		
-			load_plugin_textdomain('utvg', false, 'utubevideo-gallery/language');
-		
-			//load backend or frontend dependencies
-			if(is_admin())
-			{
-			
-				require dirname(__FILE__) . '/admin.php';
-				$this->_utvadmin = new utvAdmin();
-
-			}
-			else
-			{
-			
-				require dirname(__FILE__) . '/frontend.php';
-				$this->_utvfrontend = new utvFrontend();
-			
-			}
-		
 		}
 		
 		//recursive function for making sure slugs are unique

@@ -1,10 +1,10 @@
 === uTubeVideo Gallery ===
 Contributors: dman25560
 Donate link: http://www.codeclouds.net/utubevideo-gallery/
-Tags: video, gallery, youtube
+Tags: video, gallery, youtube, vimeo
 Requires at least: 3.0.1
 Tested up to: 4.0
-Stable tag: 1.6.2
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ This plugin allows the displaying of galleries of YouTube videos within any post
 
 Features Include:
 
-- Unlimited video galleries
+- Unlimited video galleries (YouTube and Vimeo support)
 - Built in Magnific Popup support with options to use Magnific Popup already installed by another plugin
 - Thumbnail images for videos are cached on your own website
 - Annotations are hidden automatically for a movie like experience
@@ -45,19 +45,19 @@ Features Include:
 
 = How many video galleries can I create? =
 
-Unlimited.
+As many as you want.
 
-= Can I use any YouTube video? =
+= Can I use any YouTube or Vimeo video? =
 
 Generally, yes, except in cases where the video it set to disable embedding.
 
-= Are Vevo youtube videos supported? = 
+= Are Vevo YouTube videos supported? = 
 
-Yes, all youtube videos should work unless embedding has been disabled.
+Yes, all YouTube and Vimeo videos should work unless embedding has been disabled.
 
-= Are any other types of videos supported (ie not youtube)? =
+= Are any other types of videos supported (ie not YouTube)? =
 
-No, only Youtube videos are supported, hence the name of the plugin.
+Yes, Even though the plugin is named uTubeVideo Gallery, Vimeo videos are now supported also.
 
 = Can I change the size of the video player? =
 
@@ -77,20 +77,45 @@ There is an option called Display Type in each gallery's settings; set it to Jus
 
 = How big of a playlist can I add to an album at a time? =
 
-Do to script timeouts and such it seems around 80 videos is the limit, but you will have to experiment to find what works best for you.
+Do to programming constraints and such it seems around 80 videos is the limit, but you will have to experiment to find what works best for you.
+
+= What should I do if my thumbnails are not displaying? =
+
+If your thumbnails are not displaying or if you are getting a image editor error you can check the "Load Thumbnails from YouTube" in the settings to load thumbnails directly from YouTube. However all thumbnails will be rectangular when using this option; square thumbnails will be ignored.
 
 = What if my Permalink Status is NOT Ok? = 
 
 If your permalink status is not Ok, it means permalinks are not enabled correctly. Check to see that you have permalinks turned on for Wordpress and if this does not fix the problem, de-activate and re-activate this plugin. It's also possible your the settings for your sites permalink structure are not completely compatible with this plugin.
 
+= What user permissions are required to use this plugin? = 
+
+A user must be an editor or above in order to manage video galleries and change settings.
+
 == Screenshots ==
 
-1. A gallery embedded on a page showing the videos in an album
-2. A gallery showing a video playing
-3. A gallery showing a video playing (chromeless)
-4. A listing of videos in the administration panel
+1. A gallery embedded on a page showing the albums in the gallery
+2. A gallery embedded on a page showing the videos in an album
+3. A gallery showing a video playing
+4. A gallery showing a video playing (chromeless)
+5. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.7 =
+
+* Fixed upgrade script bug
+* Admin interface usability improved
+* Fixed a compatibiliy issue with older versions of PHP
+* Made options for changing thumbnail size and padding global, instead of gallery specific
+* Improved layout of thumbnails within galleries
+* Videos now auto switch between http and https based on site
+* Added support for Vimeo
+* Improved localization
+* Added bulk managment options
+* Better error checking
+* Removed HD features for YouTube as YouTube now auto adapts resolution based on player size
+* Updated Magnific Popup to version 0.9.9 (Dimsemenov)
+* And other tweaks and fixes
 
 = 1.6.2 =
 
@@ -136,12 +161,12 @@ If your permalink status is not Ok, it means permalinks are not enabled correctl
 * Optimized fancybox call javascript
 * Slight changes to admin interface
 * Added settings for fancybox overlay color and opacity
-* Added support for adding youtube playlists to an album
+* Added support for adding YouTube playlists to an album
 * Fixed admin navigation link bugs
 * Changed main icon for admin interface and moved menu out of settings, into its own menu slot
 * Added better error messages to admin section for forms
 * Fixed uninstall script - it now deletes thumbnails when plugin is uninstalled
-* Added workaround for thumbnail problems by loading thumbnails directly from Youtube
+* Added workaround for thumbnail problems by loading thumbnails directly from YouTube
 * Localized plugin, translations not provided, however
 * Adding permalinks for albums for galleries embedded on a page, posts still use old method
 * And possibly some other stuff I forgot.... 

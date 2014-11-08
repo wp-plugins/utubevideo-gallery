@@ -7,11 +7,12 @@
  *
  * @since 1.3
  */
+  
 class utvAdmin
 {
 	
 	private $_options;
-		
+	
 	public function __construct()
 	{
 		
@@ -19,25 +20,25 @@ class utvAdmin
 		$this->_options = get_option('utubevideo_main_opts');
 	
 		//add hooks
-		add_action('admin_init', array(&$this, 'processor'));
-		add_action('admin_menu', array(&$this, 'addMenus'));
-		add_action('admin_enqueue_scripts', array(&$this, 'addScripts'));
-		add_action('wp_ajax_utv_videoorderupdate', array(&$this, 'updateVideoOrder'));
-		add_action('wp_ajax_utv_albumorderupdate', array(&$this, 'updateAlbumOrder'));
-		add_action('wp_ajax_ut_deletevideo', array(&$this, 'deleteVideo'));
-		add_action('wp_ajax_ut_deletealbum', array(&$this, 'deleteAlbum'));
-		add_action('wp_ajax_ut_deletegallery', array(&$this, 'deleteGallery'));
-		add_action('wp_ajax_ut_publishvideo', array(&$this, 'toggleVideoPublish'));
-		add_action('wp_ajax_ut_publishalbum', array(&$this, 'toggleAlbumPublish'));
+		add_action('admin_init', array($this, 'processor'));
+		add_action('admin_menu', array($this, 'addMenus'));
+		add_action('admin_enqueue_scripts', array($this, 'addScripts'));
+		add_action('wp_ajax_utv_videoorderupdate', array($this, 'updateVideoOrder'));
+		add_action('wp_ajax_utv_albumorderupdate', array($this, 'updateAlbumOrder'));
+		add_action('wp_ajax_ut_deletevideo', array($this, 'deleteVideo'));
+		add_action('wp_ajax_ut_deletealbum', array($this, 'deleteAlbum'));
+		add_action('wp_ajax_ut_deletegallery', array($this, 'deleteGallery'));
+		add_action('wp_ajax_ut_publishvideo', array($this, 'toggleVideoPublish'));
+		add_action('wp_ajax_ut_publishalbum', array($this, 'toggleAlbumPublish'));
 		
 	}
 		
 	public function addMenus()
 	{
 		
-		add_menu_page('uTubeVideo', 'uTubeVideo', 'manage_options', 'utubevideo_settings', array($this, 'option_panel'), plugins_url('utubevideo-gallery/i/utubevideo_icon_16x16.png'));
-		add_submenu_page('utubevideo_settings', 'uTubeVideo Galleries', __('Galleries', 'utvg'), 'manage_options', 'utubevideo_settings_galleries', array($this, 'gallery_panel'));
-		
+		add_menu_page(__('uTubeVideo Galleries', 'utvg'), 'uTubeVideo', 'edit_pages', 'utubevideo', array($this, 'gallery_panel'), plugins_url('utubevideo-gallery/i/utubevideo_icon_16x16.png'));
+		add_submenu_page('utubevideo', 'uTubeVideo Settings', __('Settings', 'utvg'), 'edit_pages', 'utubevideo_settings', array($this, 'option_panel'));
+			
 	}
 		
 	public function addScripts()
@@ -60,7 +61,7 @@ class utvAdmin
 		
 		for($i = 0; $i < $cnt; $i++)
 		{
-	
+
 			$wpdb->update(
 				$wpdb->prefix . 'utubevideo_video', 
 				array( 
@@ -72,9 +73,9 @@ class utvAdmin
 		}
 
 		die();
-	
+
 	}
-	
+
 	public function updateAlbumOrder()
 	{
 		global $wpdb;
@@ -84,7 +85,7 @@ class utvAdmin
 		
 		for($i = 0; $i < $cnt; $i++)
 		{
-	
+
 			$wpdb->update(
 				$wpdb->prefix . 'utubevideo_album', 
 				array( 
@@ -96,199 +97,110 @@ class utvAdmin
 		}
 
 		die();
-	
+
 	}
-	
+
 	//delete a video script//
 	public function deleteVideo()
 	{
-	
-		check_ajax_referer('ut-delete-video', 'nonce');
 
-		$key = sanitize_text_field($_POST['key']);
-		$dir = wp_upload_dir();
-		$dir = $dir['basedir'];
+		check_ajax_referer('ut-delete-video', 'nonce');
+		
+		$key = array(sanitize_key($_POST['key']));
+		
 		global $wpdb;
-		
-		//get thumbnail name for video//
-		$data = $wpdb->get_results('SELECT VID_URL, ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
-		
-		//get current video count for album//
-		$rows = $wpdb->get_results('SELECT ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $data[0]['ALB_ID'], ARRAY_A);
-		$vidcnt = $rows[0]['ALB_VIDCOUNT'] - 1;
-		
-		//delete video thumbnail//
-		unlink($dir . '/utubevideo-cache/' . $data[0]['VID_URL']  . '.jpg');
-		
-		//change album thumb to missing if empty
-		if($vidcnt == 0){
-			$wpdb->update(
-				$wpdb->prefix . 'utubevideo_album',
-				array(
-					'ALB_THUMB' => 'missing'
-				),
-				array('ALB_ID' => $data[0]['ALB_ID'])
-			);
-		}
-		
-		if($wpdb->query( 
-			$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_video WHERE VID_ID = %d", $key)
-		) && $wpdb->update(
-			$wpdb->prefix . 'utubevideo_album', 
-			array( 
-				'ALB_VIDCOUNT' => $vidcnt, 
-			), 
-			array('ALB_ID' => $data[0]['ALB_ID'])
-		) >= 0)
-			echo 'true';
-		else
-			echo 'false';
+		require_once 'class/utvAdminGen.class.php';
 			
+		$utvAdminGen = new utvAdminGen($this->_options);
+		$utvAdminGen->setPath();
+				
+		if($utvAdminGen->deleteVideos($key, $wpdb))
+			echo 1;
+
 		die();
 				
 	}
-	
+
 	//delete an album script//
 	public function deleteAlbum()
 	{
 		
 		check_ajax_referer('ut-delete-album', 'nonce');		
 				
-		$key = sanitize_text_field($_POST['key']);
-		$dir = wp_upload_dir();
-		$dir = $dir['basedir'];
+		$key = array(sanitize_key($_POST['key']));
+		
 		global $wpdb;
+		require_once 'class/utvAdminGen.class.php';
 		
-		//get videos in album to delete//
-		$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key, ARRAY_A);
+		$utvAdminGen = new utvAdminGen($this->_options);
+		$utvAdminGen->setPath();
 		
-		//get videos in album to delete//
-		$galid = $wpdb->get_results('SELECT DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-		$galid = $galid[0]['DATA_ID'];
-		
-		//get current album count for gallery//
-		$rows = $wpdb->get_results('SELECT DATA_ALBCOUNT FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $galid, ARRAY_A);
-		$albcnt = $rows[0]['DATA_ALBCOUNT'] - 1;
-		
-		//for each video in album delete thumbnail from cache//
-		foreach($data as $value)
-			unlink($dir . '/utubevideo-cache/' . $value['VID_URL']  . '.jpg');
-				
-		$wpdb->query( 
-			$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_video WHERE ALB_ID = %d", $key)
-		);	
-				
-		if($wpdb->query( 
-			$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_album WHERE ALB_ID = %d", $key)
-		) && $wpdb->update(
-			$wpdb->prefix . 'utubevideo_dataset', 
-			array( 
-				'DATA_ALBCOUNT' => $albcnt
-			), 
-			array('DATA_ID' => $galid)
-		) >= 0)
-			echo 'true';
-		else
-			echo 'false';
-			
+		if($utvAdminGen->deleteAlbums($key, $wpdb))
+			echo 1;
+
 		die();
 							
 	}
-	
+
 	//delete a gallery script//
 	public function deleteGallery()
 	{
 		
 		check_ajax_referer('ut-delete-gallery', 'nonce');
 		
-		$key = sanitize_text_field($_POST['key']);
-		$dir = wp_upload_dir();
-		$dir = $dir['basedir'];
+		$key = array(sanitize_key($_POST['key']));
+		
 		global $wpdb;
+		require_once 'class/utvAdminGen.class.php';
 		
-		//get albums within gallery//
-		$rows = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $key, ARRAY_A);	
+		$utvAdminGen = new utvAdminGen($this->_options);
+		$utvAdminGen->setPath();
 		
-		//for each album get videos and delete thumbnails and references of videos / album//
-		foreach($rows as $value)
-		{
-		
-			$data = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $value['ALB_ID'], ARRAY_A);
-			
-			foreach($data as $nvalue)
-				unlink($dir . '/utubevideo-cache/' . $nvalue['VID_URL']  . '.jpg');
-			
-			$wpdb->query( 
-				$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_video WHERE ALB_ID = %d", $value['ALB_ID'])
-			);
-		
-			$wpdb->query( 
-				$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_album WHERE ALB_ID = %d", $value['ALB_ID'])
-			);
-	
-		}
-			
-		if($wpdb->query( 
-			$wpdb->prepare("DELETE FROM " . $wpdb->prefix . "utubevideo_dataset WHERE DATA_ID = %d", $key)
-		))
-			echo 'true';
+		if($utvAdminGen->deleteGalleries($key, $wpdb))
+			echo 1;
 		else
-			echo 'false';
-			
+			echo 0;
+
 		die();
-				
+					
 	}
-	
+
 	public function toggleVideoPublish()
 	{
-	
+
 		check_ajax_referer('ut-publish-video', 'nonce');
 		
-		$key = sanitize_text_field($_POST['key']);
-		$changeto = sanitize_text_field($_POST['changeto']);
+		$key = array(sanitize_key($_POST['key']));
+		$changeTo = sanitize_text_field($_POST['changeTo']);
 		
 		global $wpdb;
-		
-		if($wpdb->update(
-			$wpdb->prefix . 'utubevideo_video', 
-			array( 
-				'VID_PUBLISH' => $changeto, 
-			), 
-			array('VID_ID' => $key)
-		) >= 0)
-			echo 'true';
-		else
-			echo 'false';
-			
-		die();
-		
-	}
-	
-	public function toggleAlbumPublish()
-	{
-	
-		check_ajax_referer('ut-publish-album', 'nonce');
-		
-		$key = sanitize_text_field($_POST['key']);
-		$changeto = sanitize_text_field($_POST['changeto']);
-		
-		global $wpdb;
-		
-		if($wpdb->update(
-			$wpdb->prefix . 'utubevideo_album', 
-			array( 
-				'ALB_PUBLISH' => $changeto, 
-			), 
-			array('ALB_ID' => $key)
-		) >= 0)
-			echo 'true';
-		else
-			echo 'false';
-			
+		require_once 'class/utvAdminGen.class.php';
+					
+		if(utvAdminGen::toggleVideosPublish($key, $changeTo, $wpdb))
+			echo 1;
+
 		die();
 		
 	}
 
+	public function toggleAlbumPublish()
+	{
+
+		check_ajax_referer('ut-publish-album', 'nonce');
+		
+		$key = array(sanitize_key($_POST['key']));
+		$changeTo = sanitize_text_field($_POST['changeTo']);
+		
+		global $wpdb;
+		require_once 'class/utvAdminGen.class.php';
+			
+		if(utvAdminGen::toggleAlbumsPublish($key, $changeTo, $wpdb))
+			echo 1;
+
+		die();
+		
+	}
+	
 	public function gallery_panel()
 	{
 	
@@ -301,7 +213,7 @@ class utvAdmin
 		
 		<?php screen_icon('utubevideo-gallery'); ?>
 			
-		<h2 id="utv-masthead">uTubeVideo Gallery Settings</h2>
+		<h2 id="utv-masthead">uTubeVideo <?php _e('Galleries', 'utvg'); ?></h2>
 			
 		<script>
 		
@@ -328,595 +240,31 @@ class utvAdmin
 				if(issues > 0)
 					return true;
 			}
-				
+			
 			jQuery(function(){
 					
-				jQuery('div.updated, div.e-message').delay(3000).queue(function(){jQuery(this).remove();});
-					
+				jQuery('div.updated, div.e-message').delay(6000).queue(function(){jQuery(this).remove();});
+			
 			});
 				
 		</script>
 			
 		<?php	
-			
-		//display create a gallery form//
-		if(isset($_POST['addGalleryForm']))
-		{
-			
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#createGallery').click(function(){
-			
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php _e('Create Gallery', 'utvg'); ?></h3>
-					<p>
-						<label for="galleryName"><?php _e('Gallery Name:', 'utvg'); ?></label>
-						<input type="text" name="galleryName" class="utv-required"/>
-						<span class="utv-hint"><?php _e('ex: name of gallery for your reference', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Width:', 'utvg'); ?></label>
-						<input type="number" name="thumbWidth" class="utv-required" min="0" max="700" value="150"/>
-						<span class="utv-hint"><?php _e('ex: the size of thumbnails in pixels', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Padding:', 'utvg'); ?></label>
-						<input type="number" name="thumbPadding" class="utv-required" min="0" max="100" value="10"/>
-						<span class="utv-hint"><?php _e('ex: the horizontal space between thumbnails in pixels', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label for="albumSort"><?php _e('Album Sorting:', 'utvg'); ?></label>
-						<select name="albumSort">
-							<option value="asc"><?php _e('Top to Bottom', 'utvg'); ?></option>
-							<option value="desc"><?php _e('Bottom to Top', 'utvg'); ?></option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the order that albums will be displayed', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label for="displayType"><?php _e('Display Type:', 'utvg'); ?></label>
-						<select name="displayType">
-							<option value="album"><?php _e('Albums', 'utvg'); ?></option>
-							<option value="video"><?php _e('Just Videos', 'utvg'); ?></option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: display albums or just videos in gallery', 'utvg'); ?></span>
-					</p>
-					<p class="submit">  
-						<input type="submit" id="createGallery" name="createGallery" value="<?php _e('Save New Gallery', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_save_gallery'); ?>
-						<a href="?page=utubevideo_settings_galleries" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
-					</p> 
-				</form>
-			</div>
-			
-		<?php
-			
-		}
-		//display gallery edit form//
-		elseif(isset($_POST['editGalleryForm']))
-		{
-		
-			$key = sanitize_text_field($_POST['key']);
-			$gallery = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $key, ARRAY_A);
-				
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#saveGalleryEdit').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php _e('Edit Gallery', 'utvg'); ?></h3>
-					<p>
-						<label><?php _e('Gallery Name:', 'utvg'); ?></label>
-						<input type="text" name="galname" class="utv-required" value="<?php echo $gallery[0]['DATA_NAME']; ?>"/>
-						<span class="utv-hint"><?php _e('ex: name of gallery', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Width:', 'utvg'); ?></label>
-						<input type="number" name="thumbWidth" class="utv-required" value="<?php echo $gallery[0]['DATA_THUMBWIDTH']; ?>" min="0" max="700"/>
-						<span class="utv-hint"><?php _e('ex: the size of thumbnails in pixels', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Padding:', 'utvg'); ?></label>
-						<input type="number" name="thumbPadding" class="utv-required" value="<?php echo $gallery[0]['DATA_THUMBPADDING']; ?>" min="0" max="100"/>
-						<span class="utv-hint"><?php _e('ex: the horizontal space between thumbnails in pixels', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label for="albumSort"><?php _e('Album Sorting:', 'utvg'); ?></label>
-						<select name="albumSort">
-							
-							<?php
-							
-							$opts = array(array('text' => __('Top to Bottom', 'utvg'), 'value' => 'asc'), array('text' => __('Bottom to Top', 'utvg'), 'value' => 'desc'));	
-					
-							foreach($opts as $val)
-							{
-								
-								if($val['value'] == $gallery[0]['DATA_SORT'])
-									echo '<option value="' . $val['value'] . '" selected>' . $val['text'] . '</option>';
-								else
-									echo '<option value="' . $val['value'] . '">' . $val['text'] . '</option>';
-
-							}
-								
-							?>
-							
-						</select>
-						<span class="utv-hint"><?php _e('ex: the order that albums will be displayed', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label for="displayType"><?php _e('Display Type:', 'utvg'); ?></label>
-						<select name="displayType">
-							
-							<?php
-							
-							$opts = array(array('text' => __('Albums', 'utvg'), 'value' => 'album'), array('text' => __('Just Videos', 'utvg'), 'value' => 'video'));	
-					
-							foreach($opts as $val)
-							{
-								
-								if($val['value'] == $gallery[0]['DATA_DISPLAYTYPE'])
-									echo '<option value="' . $val['value'] . '" selected>' . $val['text'] . '</option>';
-								else
-									echo '<option value="' . $val['value'] . '">' . $val['text'] . '</option>';
-
-							}
-								
-							?>
-							
-						</select>
-						<span class="utv-hint"><?php _e('ex: display albums or just videos in gallery', 'utvg'); ?></span>
-					</p>
-					<p class="submit">  
-						<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-						<input type="hidden" name="oldThumbWidth" value="<?php echo $gallery[0]['DATA_THUMBWIDTH']; ?>"/>
-						<input type="submit" id="saveGalleryEdit" name="saveGalleryEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_edit_gallery'); ?>
-						<a href="?page=utubevideo_settings_galleries" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>		
-					</p> 
-				</form>
-			</div>
-			
-		<?php
-			
-		}
-		
-		//display create album form//
-		elseif(isset($_POST['addAlbumForm']))
-		{
-		
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#saveAlbum').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-			
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php _e('Create Video Album', 'utvg'); ?></h3>
-					<p>
-						<label for="alname"><?php _e('Album Name:', 'utvg'); ?></label>
-						<input type="text" name="alname" class="utv-required"/>
-						<span class="utv-hint"><?php _e('ex: name of video album', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label for="vidsort"><?php _e('Video Sorting:', 'utvg'); ?></label>
-						<select name="vidSort">
-							<option value="asc"><?php _e('Top to Bottom', 'utvg'); ?></option>
-							<option value="desc"><?php _e('Bottom to Top', 'utvg'); ?></option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the order that videos will be displayed', 'utvg'); ?></span>
-					</p>
-					<p class="submit">  
-						<input type="submit" id="saveAlbum" name="saveAlbum" value="<?php _e('Save New Album','utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_save_album'); ?>
-						<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
-					</p> 
-				</form>
-			</div>
-
-		<?php
-		}
-		//display album edit form//
-		elseif(isset($_POST['editAlbumForm']))
-		{
-			
-			$key = sanitize_text_field($_POST['key']);
-			$dir = wp_upload_dir();
-			$dir = $dir['baseurl'];
-
-			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-			$thumbs = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key, ARRAY_A);
-				
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#saveAlbumEdit').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-				
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php _e('Edit Video Album', 'utvg'); ?></h3>
-					<p>				
-						<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['ALB_THUMB'] . '.jpg';?>" class="utv-preview-thumb"/>
-					</p>
-					<p>
-						<label><?php _e('Album Name:', 'utvg'); ?></label>
-						<input type="text" name="alname" class="utv-required" value="<?php echo stripslashes($rows[0]['ALB_NAME']); ?>"/>
-						<span class="utv-hint"><?php _e('ex: name of album', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Slug:', 'utvg'); ?></label>
-						<input type="text" name="slug" class="utv-required" value="<?php echo stripslashes($rows[0]['ALB_SLUG']); ?>"/>
-						<span class="utv-hint"><?php _e('ex: permalink slug for album', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Video Sorting:', 'utvg'); ?></label>
-						<select name="vidSort">
-							
-						<?php
-							
-						$opts = array(array('text' => __('Top to Bottom', 'utvg'), 'value' => 'asc'), array('text' => __('Bottom to Top', 'utvg'), 'value' => 'desc'));	
-					
-						foreach($opts as $value)
-						{
-							
-							if($value['value'] == $rows[0]['ALB_SORT'])
-								echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
-							else
-								echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
-
-						}
-							
-						?>
-							
-						</select>
-						<span class="utv-hint"><?php _e('ex: the order that videos will be displayed', 'utvg'); ?></span>
-					</p>						
-					<p>
-						<label><?php _e('Album Thumbnail:', 'utvg'); ?></label>
-						<div id="utv-thumbnail-select">
-							
-						<?php
-							
-						if(!empty($thumbs))
-						{
-							
-							foreach($thumbs as $value)
-							{
-								
-							?>
-								
-								<div>		
-									<img src="<?php echo $dir . '/utubevideo-cache/' . $value['VID_URL'] . '.jpg';?>" class="utv-preview-thumb"/>
-									<input type="radio" name="albumThumbSelect" value="<?php echo $value['VID_URL']; ?>" <?php echo ($rows[0]['ALB_THUMB'] == $value['VID_URL'] ? 'checked' : ''); ?>/>
-								</div>
-								
-							<?php
-								
-							}
-								
-						}
-						else
-							echo '<span class="utv-admin-error">' . __('Oops, you have not added any videos to this album yet', 'utvg') . '</span>';
-								
-						?>
-						
-						</div>
-						<span class="utv-hint"><?php _e('ex: choose the thumbnail for the album', 'utvg'); ?></span>
-					</p>
-					<p class="submit">  
-						<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-						<input type="hidden" name="prevSlug" value="<?php echo $rows[0]['ALB_SLUG']; ?>"/>
-						<input type="submit" name="saveAlbumEdit" id="saveAlbumEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_edit_album'); ?>
-						<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
-					</p> 
-				</form>
-			</div>
-
-		<?php
-			
-		}
-		//display add video form//
-		elseif(isset($_POST['addVideoForm']))
-		{
-			
-			$key = sanitize_text_field($_POST['key']);
-			$rows = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-			
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#addVideo').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-				
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php echo __('Add New Video to', 'utvg') . '<span class="utv-sub-h3"> ( ' . stripslashes($rows[0]['ALB_NAME']) . ' )</span>'; ?></h3>
-					<p>
-						<label><?php _e('Video URL:', 'utvg'); ?></label>
-						<input type="text" name="url" class="utv-required"/>
-						<span class="utv-hint"><?php _e('ex: youtube video url', 'utvg'); ?></span>
-					</p>		
-					<p>
-						<label><?php _e('Video Name:', 'utvg'); ?></label>
-						<input type="text" name="vidname" class="utv-required"/>
-						<span class="utv-hint"><?php _e('ex: the name of the video', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
-						<select name="thumbType"/>
-							<option value="rectangle">Rectangle</option>
-							<option value="square">Square</option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
-					</p>	
-					<p>
-						<label><?php _e('Video Quality:', 'utvg'); ?></label>
-						<select name="videoQuality"/>
-							<option value="large">480p</option>
-							<option value="hd720">720p</option>
-							<option value="hd1080">1080p</option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the starting quality of the video', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Chromeless Video:', 'utvg'); ?></label>
-						<input type="checkbox" name="videoChrome" />
-						<span class="utv-hint"><?php _e('ex: hide the playback controls of the video', 'utvg'); ?></span>
-					</p>					
-					<p class="submit">  
-						<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-						<input type="submit" name="addVideo" id="addVideo" value="<?php _e('Save New Video', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_add_video'); ?>
-						<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
-					</p> 
-				</form>
-			</div>
-				
-		<?php
-
-		}
-		//display add playlist form//
-		elseif(isset($_POST['addPlaylistForm']))
-		{
-		
-			$key = sanitize_text_field($_POST['key']);
-			$rows = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-			
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#addPlaylist').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-				
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php echo __('Add New Playlist to', 'utvg') . '<span class="utv-sub-h3"> ( ' . $rows[0]['ALB_NAME'] . ' )</span>'; ?></h3>
-					<p>
-						<label><?php _e('Playlist URL:', 'utvg'); ?></label>
-						<input type="text" name="url" class="utv-required"/>
-						<span class="utv-hint"><?php _e('ex: youtube playlist url', 'utvg'); ?></span>
-					</p>		
-					<p>
-						<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
-						<select name="thumbType"/>
-							<option value="rectangle">Rectangle</option>
-							<option value="square">Square</option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
-					</p>	
-					<p>
-						<label><?php _e('Video Quality:', 'utvg'); ?></label>
-						<select name="videoQuality"/>
-							<option value="large">480p</option>
-							<option value="hd720">720p</option>
-							<option value="hd1080">1080p</option>
-						</select>
-						<span class="utv-hint"><?php _e('ex: the starting quality of the playlist videos', 'utvg'); ?></span>
-					</p>						
-					<p class="submit">  
-						<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-						<input type="submit" name="addPlaylist" id="addPlaylist" value="<?php _e('Save New Playlist', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_add_playlist'); ?>
-						<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
-					</p> 
-				</form>
-			</div>
-				
-		<?php
-		}
-		//display video edit form//
-		elseif(isset($_POST['editVideoForm']))
-		{
-			
-			$key = sanitize_text_field($_POST['key']);
-			$dir = wp_upload_dir();
-			$dir = $dir['baseurl'];
-					
-			$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
-				
-		?>
-		
-			<script>
-			
-				jQuery(function(){
-			
-					jQuery('#saveVideoEdit').click(function(){
-						
-						var form = jQuery(this).parents('form');
-						if(utCheckForm(form))
-							return false;
-						
-					});
-					
-				});
-			
-			</script>
-				
-			<div class="utv-formbox utv-top-formbox">
-				<form method="post">  
-					<h3><?php _e('Edit Video', 'utvg'); ?></h3>
-					<p>				
-						<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['VID_URL'] . '.jpg';?>" class="utv-preview-thumb"/>
-					</p>
-					<p>
-						<label><?php _e('Video Name:', 'utvg'); ?></label>
-						<input type="text" name="vidname" class="utv-required" value="<?php echo stripslashes($rows[0]['VID_NAME']); ?>"/>
-						<span class="utv-hint"><?php _e('ex: name of video', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
-						<select name="thumbType"/>
-							
-						<?php
-							
-						$opts = array(array('text' => __('Rectangle', 'utvg'), 'value' => 'rectangle'), array('text' => __('Square', 'utvg'), 'value' => 'square'));	
-					
-						foreach($opts as $value)
-						{
-							
-							if($value['value'] == $rows[0]['VID_THUMBTYPE'])
-								echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
-							else
-								echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
-
-						}
-						
-						?>
-								
-						</select>
-						<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Video Quality:', 'utvg'); ?></label>
-						<select name="videoQuality"/>
-						
-						<?php
-						
-						$opts = array(array('text' => '480p', 'value' => 'large'), array('text' => '720p', 'value' => 'hd720'), array('text' => '1080p', 'value' => 'hd1080'));	
-					
-						foreach($opts as $value)
-						{
-							
-							if($value['value'] == $rows[0]['VID_QUALITY'])
-								echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
-							else
-								echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
-
-						}
-						
-						?>
-						
-						</select>
-						<span class="utv-hint"><?php _e('ex: the starting quality of the video', 'utvg'); ?></span>
-					</p>
-					<p>
-						<label><?php _e('Chromeless Video:', 'utvg'); ?></label>
-						<input type="checkbox" name="videoChrome"  <?php echo ($rows[0]['VID_CHROME'] == '0' ? 'checked' : ''); ?>/>
-						<span class="utv-hint"><?php _e('ex: hide the playback controls of the video', 'utvg'); ?></span>
-					</p>	
-					<p class="submit">  
-						<input type="hidden" name="key" value="<?php echo $key; ?>"/>
-						<input type="submit" name="saveVideoEdit" id="saveVideoEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
-						<?php wp_nonce_field('utubevideo_edit_video'); ?>
-						<a href="<?php echo $_SERVER['HTTP_REFERER']; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
-					</p> 
-				</form>
-			</div>
-
-		<?php
-			
-		}
-		//if act parameter is set//
-		elseif(isset($_GET['act']))
+		//if view parameter is set//
+		if(isset($_GET['view']))
 		{
 			
 			//view video albums in a gallery//
-			if($_GET['act'] == 'viewdset')
+			if($_GET['view'] == 'gallery')
 			{
 				
-				$id = $_GET['id'];
-				$dir = wp_upload_dir();
-				$dir = $dir['baseurl'];
-							
+				$id = sanitize_key($_GET['id']);
+				
+				require_once 'class/utvAlbumListTable.class.php';
+					
+				$albums = new utvAlbumListTable($id);
+				$albums->prepare_items(); 
+						
 				$gallery = $wpdb->get_results('SELECT DATA_NAME, DATA_ALBCOUNT	 FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = "' . $id . '"', ARRAY_A);
 		
 			?>
@@ -962,7 +310,7 @@ class utvAdmin
 
 							jQuery.post(ajaxurl, data, function(response) {
 
-								if(response == 'true')
+								if(response)
 									$item.fadeOut(400, function(){ $item.remove(); });
 	
 							});
@@ -980,13 +328,13 @@ class utvAdmin
 							{
 								action: 'ut_publishalbum',
 								key: key,
-								changeto: changeto,
+								changeTo: changeto,
 								nonce: '<?php echo wp_create_nonce('ut-publish-album'); ?>'
 							};
 
 							jQuery.post(ajaxurl, data, function(response) {
 
-								if(response == 'true'){
+								if(response){
 									if($item.hasClass('utv-publish')){
 										$item.addClass('utv-unpublish');
 										$item.removeClass('utv-publish');
@@ -1007,65 +355,186 @@ class utvAdmin
 				</script>
 
 				<div class="utv-formbox utv-top-formbox">
-					<form method="post" >
+					<form method="post">
 						<p class="submit utv-actionbar">
-							<input class="button-secondary" type="submit" name="addAlbumForm" value="<?php _e('Create New Album', 'utvg'); ?>"/>
-							<a href="?page=utubevideo_settings_galleries&act=viewdset&id=<?php echo $id; ?>" class="utv-ok" title="Show order albums will display in"><?php _e('Clear Sorting', 'utvg'); ?></a>
-							<a href="?page=utubevideo_settings_galleries" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=albumcreate&id=<?php echo $id; ?>" class="utv-link-submit-button"><?php _e('Create New Album', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=gallery&id=<?php echo $id; ?>" class="utv-ok"><?php _e('Clear Sorting', 'utvg'); ?></a>
+							<a href="?page=utubevideo" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>
 						</p>
 					</form>
-					<h3><?php _e('Video Albums for gallery', 'utvg'); ?><span class="utv-sub-h3"> ( <?php echo $gallery[0]['DATA_NAME']; ?> ) - <?php echo $gallery[0]['DATA_ALBCOUNT'] . ' ' . __('albums', 'utvg'); ?></span></h3>
+					<h3 class="utv-h3"><?php _e('Video Albums for Gallery', 'utvg'); ?></h3>
+					<span class="utv-sub-h3"> ( <?php echo $gallery[0]['DATA_NAME']; ?> ) - <span id="utv-album-count"><?php echo $gallery[0]['DATA_ALBCOUNT']; ?></span> <?php _e('albums', 'utvg'); ?></span>
+					<form method="post">
 					
-					<?php
-				
-					require_once(plugin_dir_path(__FILE__) . 'class/utvAlbumListTable.class.php');
+						<?php $albums->display(); ?>
 					
-					$data = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $id . ' ORDER BY ALB_POS', ARRAY_A);
-					
-					$cells = array();
-					
-					foreach($data as $val)
-					{
-					
-						array_push($cells, array(
-							'ID' => $val['ALB_ID'],
-							'albthumbnail' => '<img src="' . $dir . '/utubevideo-cache/' . $val['ALB_THUMB'] . '.jpg" class="utv-preview-thumb"/><span class="utv-sortable-handle">::</span>',
-							'name' => stripslashes($val['ALB_NAME']),
-							'published' => $val['ALB_PUBLISH'] == '1' ? '<a href="" class="utv-publish" title="Click to change"/>' : '<a href="" class="utv-unpublish" title="Click to change"/>',
-										
-							'dateadd' => date('Y/m/d', $val['ALB_UPDATEDATE']),
-							'videos' => $val['ALB_VIDCOUNT'],
-							'actions' => '<form method="post">
-											<input class="utv-link-button" type="submit" name="editAlbumForm" value="' .  __('Edit', 'utvg') . '"/>
-											<input class="utv-link-button ut-delete-album" type="submit" name="delAl" value="' . __('Delete', 'utvg') . '"/>
-											<input class="utv-link-button" type="submit" name="addVideoForm" value="' . __('Add Video', 'utvg') . '"/>	
-											<input class="utv-link-button" type="submit" name="addPlaylistForm" value="' . __('Add Playlist', 'utvg') . '"/>										
-											<input type="hidden" name="key" class="ut-key" value="' . $val['ALB_ID'] . '"/>
-											<a href="?page=utubevideo_settings_galleries&act=viewal&id=' . $val['ALB_ID'] . '&prev=' . urlencode('?page=utubevideo_settings_galleries&act=viewdset&id=' . $id) . '">View</a>
-										</form>'
-						));
-						
-					}
-					
-					$albums = new utvAlbumListTable($cells);
-					$albums->prepare_items(); 
-					$albums->display(); 
-
-					?>
-					
+					</form>
 				</div>
 
 			<?php
 			
 			}
+			//display create a gallery form//
+			elseif($_GET['view'] == 'gallerycreate')
+			{
+				
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#createGallery').click(function(){
+				
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php _e('Create Gallery', 'utvg'); ?></h3>
+						<p>
+							<label for="galleryName"><?php _e('Gallery Name:', 'utvg'); ?></label>
+							<input type="text" name="galleryName" class="utv-required"/>
+							<span class="utv-hint"><?php _e('ex: name of gallery for your reference', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label for="albumSort"><?php _e('Album Sorting:', 'utvg'); ?></label>
+							<select name="albumSort">
+								<option value="asc"><?php _e('Top to Bottom', 'utvg'); ?></option>
+								<option value="desc"><?php _e('Bottom to Top', 'utvg'); ?></option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the order that albums will be displayed', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label for="displayType"><?php _e('Display Type:', 'utvg'); ?></label>
+							<select name="displayType">
+								<option value="album"><?php _e('Albums', 'utvg'); ?></option>
+								<option value="video"><?php _e('Just Videos', 'utvg'); ?></option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: display albums or just videos in gallery', 'utvg'); ?></span>
+						</p>
+						<p class="submit">  
+							<input type="submit" id="createGallery" name="createGallery" value="<?php _e('Save New Gallery', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_save_gallery'); ?>
+							<a href="?page=utubevideo" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
+						</p> 
+					</form>
+				</div>
+				
+			<?php
+				
+			}
+			//display gallery edit form//
+			elseif($_GET['view'] == 'galleryedit')
+			{
+			
+				$id = sanitize_key($_GET['id']);
+				$gallery = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $id, ARRAY_A);
+					
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#saveGalleryEdit').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php _e('Edit Gallery', 'utvg'); ?></h3>
+						<p>
+							<label><?php _e('Gallery Name:', 'utvg'); ?></label>
+							<input type="text" name="galname" class="utv-required" value="<?php echo $gallery[0]['DATA_NAME']; ?>"/>
+							<span class="utv-hint"><?php _e('ex: name of gallery', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label for="albumSort"><?php _e('Album Sorting:', 'utvg'); ?></label>
+							<select name="albumSort">
+								
+								<?php
+								
+								$opts = array(array('text' => __('Top to Bottom', 'utvg'), 'value' => 'asc'), array('text' => __('Bottom to Top', 'utvg'), 'value' => 'desc'));	
+						
+								foreach($opts as $val)
+								{
+									
+									if($val['value'] == $gallery[0]['DATA_SORT'])
+										echo '<option value="' . $val['value'] . '" selected>' . $val['text'] . '</option>';
+									else
+										echo '<option value="' . $val['value'] . '">' . $val['text'] . '</option>';
+
+								}
+									
+								?>
+								
+							</select>
+							<span class="utv-hint"><?php _e('ex: the order that albums will be displayed', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label for="displayType"><?php _e('Display Type:', 'utvg'); ?></label>
+							<select name="displayType">
+								
+								<?php
+								
+								$opts = array(array('text' => __('Albums', 'utvg'), 'value' => 'album'), array('text' => __('Just Videos', 'utvg'), 'value' => 'video'));	
+						
+								foreach($opts as $val)
+								{
+									
+									if($val['value'] == $gallery[0]['DATA_DISPLAYTYPE'])
+										echo '<option value="' . $val['value'] . '" selected>' . $val['text'] . '</option>';
+									else
+										echo '<option value="' . $val['value'] . '">' . $val['text'] . '</option>';
+
+								}
+									
+								?>
+								
+							</select>
+							<span class="utv-hint"><?php _e('ex: display albums or just videos in gallery', 'utvg'); ?></span>
+						</p>
+						<p class="submit">  
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<input type="hidden" name="oldThumbWidth" value="<?php echo $gallery[0]['DATA_THUMBWIDTH']; ?>"/>
+							<input type="submit" id="saveGalleryEdit" name="saveGalleryEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_edit_gallery'); ?>
+							<a href="?page=utubevideo" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>		
+						</p> 
+					</form>
+				</div>
+				
+			<?php
+				
+			}
 			//view videos within a video album//
-			elseif($_GET['act'] == 'viewal')
+			elseif($_GET['view'] == 'album')
 			{
 
-				$id = $_GET['id'];
-				$dir = wp_upload_dir();
-				$dir = $dir['baseurl'];
-						
+				$id = sanitize_key($_GET['id']);
+				$pid = sanitize_key($_GET['pid']);
+				
+				require_once 'class/utvVideoListTable.class.php';
+					
+				$videos = new utvVideoListTable($id);
+				$videos->prepare_items(); 
+			
 				$album = $wpdb->get_results('SELECT ALB_ID, ALB_NAME, ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = "' . $id . '"', ARRAY_A);
 			
 			?>
@@ -1101,6 +570,7 @@ class utvAdmin
 							
 							var $item = jQuery(this).parents('tr');
 							var key = $item.attr('id');
+							var $counter = jQuery('#utv-video-count');
 							
 							var data = 
 							{
@@ -1110,9 +580,13 @@ class utvAdmin
 							};
 
 							jQuery.post(ajaxurl, data, function(response) {
-
-								if(response == 'true')
+							
+								if(response){
+								
 									$item.fadeOut(400, function(){ $item.remove(); });
+									$counter.text($counter.text() - 1);
+									
+								}
 									
 							});
 							
@@ -1129,13 +603,14 @@ class utvAdmin
 							{
 								action: 'ut_publishvideo',
 								key: key,
-								changeto: changeto,
+								changeTo: changeto,
 								nonce: '<?php echo wp_create_nonce('ut-publish-video'); ?>'
 							};
 
 							jQuery.post(ajaxurl, data, function(response) {
 
-								if(response == 'true'){
+								if(response){
+								
 									if($item.hasClass('utv-publish')){
 										$item.addClass('utv-unpublish');
 										$item.removeClass('utv-publish');
@@ -1156,55 +631,448 @@ class utvAdmin
 					});
 						
 				</script>
-
 				<div class="utv-formbox utv-top-formbox">
 					<form method="post">
 						<p class="submit utv-actionbar">
-							<input class="button-secondary" type="submit" name="addVideoForm" value="<?php _e('Add Video', 'utvg'); ?>"/>
-							<input class="button-secondary" type="submit" name="addPlaylistForm" value="<?php _e('Add Playlist', 'utvg'); ?>"/>
-							<input type="hidden" name="key" value="<?php echo $album[0]['ALB_ID']; ?>"/>
-							<a href="?page=utubevideo_settings_galleries&act=viewal&id=<?php echo $id; ?>" class="utv-ok" title="Show order videos will display in"><?php _e('Clear Sorting', 'utvg'); ?></a>
-							<a href="<?php echo (isset($_GET['prev']) ? $_GET['prev'] : '?page=utubevideo_settings_galleries'); ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=videoadd&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-link-submit-button"><?php _e('Add Video', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=playlistadd&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-link-submit-button"><?php _e('Add Playlist', 'utvg'); ?></a>						
+							<a href="?page=utubevideo&view=album&id=<?php echo $id; ?>" class="utv-ok"><?php _e('Clear Sorting', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=gallery&id=<?php echo $pid; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>
 						</p>
 					</form>
-					<h3><?php _e('Videos for album', 'utvg'); ?><span class="utv-sub-h3"> ( <?php echo stripslashes($album[0]['ALB_NAME']); ?> ) - <?php echo $album[0]['ALB_VIDCOUNT'] . ' ' . __('videos', 'utvg'); ?></span></h3>
+					<h3 class="utv-h3"><?php _e('Videos for Album', 'utvg'); ?></h3>
+					<span class="utv-sub-h3"> ( <?php echo stripslashes($album[0]['ALB_NAME']); ?> ) - <span id="utv-video-count"><?php echo $album[0]['ALB_VIDCOUNT']; ?></span> <?php _e('videos', 'utvg'); ?></span>
+					<form method="post">
 					
-					<?php
-				
-					require_once(plugin_dir_path(__FILE__) . 'class/utvVideoListTable.class.php');
+						<?php $videos->display(); ?>
 					
-					$data = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $id . ' ORDER BY VID_POS', ARRAY_A);
-					
-					$cells = array();
-					
-					foreach($data as $val)
-					{
-					
-						array_push($cells, array(
-							'ID' => $val['VID_ID'],
-							'vidthumbnail' => '<a href="http://www.youtube.com/watch?v=' . $val['VID_URL'] . '" target="_blank" title="Watch On YouTube">
-									<img src="' . $dir . '/utubevideo-cache/' . $val['VID_URL'] . '.jpg" class="utv-preview-thumb"/>
-								</a>
-								<span class="utv-sortable-handle">::</span>',
-							'name' => stripslashes($val['VID_NAME']),
-							'published' => $val['VID_PUBLISH'] == '1' ? '<a href="" class="utv-publish" title="Click to change"/>' : '<a href="" class="utv-unpublish" title="Click to change"/>',		
-							'dateadd' => date('Y/m/d', $val['VID_UPDATEDATE']),
-							'actions' => '<form method="post">
-									<input class="utv-link-button" type="submit" name="editVideoForm" value="' . __('Edit', 'utvg') . '"/>
-									<input class="utv-link-button ut-delete-video" type="submit" name="delVid" value="' . __('Delete', 'utvg') . '"/>
-									<input type="hidden" name="key" class="ut-key" value="' . $val['VID_ID'] . '"/>
-									<a href="http://www.youtube.com/watch?v=' . $val['VID_URL'] . '" target="_blank">' . __('Watch', 'utvg') . '</a>
-								</form>'
-						));
-						
-					}
-					
-					$videos = new utvVideoListTable($cells);
-					$videos->prepare_items(); 
-					$videos->display(); 
+					</form>
+				</div>
 
-					?>
+			<?php
+				
+			}
+			//display create album form//
+			elseif($_GET['view'] == 'albumcreate')
+			{
 			
+				$id = sanitize_key($_GET['id']);
+			
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#saveAlbum').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+				
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php _e('Create Video Album', 'utvg'); ?></h3>
+						<p>
+							<label for="alname"><?php _e('Album Name:', 'utvg'); ?></label>
+							<input type="text" name="alname" class="utv-required"/>
+							<span class="utv-hint"><?php _e('ex: name of video album', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label for="vidsort"><?php _e('Video Sorting:', 'utvg'); ?></label>
+							<select name="vidSort">
+								<option value="asc"><?php _e('Top to Bottom', 'utvg'); ?></option>
+								<option value="desc"><?php _e('Bottom to Top', 'utvg'); ?></option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the order that videos will be displayed', 'utvg'); ?></span>
+						</p>
+						<p class="submit">  
+							<input type="submit" id="saveAlbum" name="saveAlbum" value="<?php _e('Save New Album','utvg') ?>" class="button-primary"/> 
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<?php wp_nonce_field('utubevideo_save_album'); ?>
+							<a href="?page=utubevideo&view=gallery&id=<?php echo $id; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
+						</p> 
+					</form>
+				</div>
+
+			<?php
+			}
+			//display album edit form//
+			elseif($_GET['view'] == 'albumedit')
+			{
+				
+				$id = sanitize_key($_GET['id']);
+				$pid = sanitize_key($_GET['pid']);
+				$dir = wp_upload_dir();
+				$dir = $dir['baseurl'];
+
+				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $id, ARRAY_A);
+				$thumbs = $wpdb->get_results('SELECT VID_URL FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $id, ARRAY_A);
+					
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#saveAlbumEdit').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+					
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php _e('Edit Video Album', 'utvg'); ?></h3>
+						<p>				
+							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['ALB_THUMB'] . '.jpg';?>" class="utv-preview-thumb"/>
+						</p>
+						<p>
+							<label><?php _e('Album Name:', 'utvg'); ?></label>
+							<input type="text" name="alname" class="utv-required" value="<?php echo stripslashes($rows[0]['ALB_NAME']); ?>"/>
+							<span class="utv-hint"><?php _e('ex: name of album', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Slug:', 'utvg'); ?></label>
+							<input type="text" name="slug" class="utv-required" value="<?php echo stripslashes($rows[0]['ALB_SLUG']); ?>"/>
+							<span class="utv-hint"><?php _e('ex: permalink slug for album', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Video Sorting:', 'utvg'); ?></label>
+							<select name="vidSort">
+								
+							<?php
+								
+							$opts = array(array('text' => __('Top to Bottom', 'utvg'), 'value' => 'asc'), array('text' => __('Bottom to Top', 'utvg'), 'value' => 'desc'));	
+						
+							foreach($opts as $value)
+							{
+								
+								if($value['value'] == $rows[0]['ALB_SORT'])
+									echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
+								else
+									echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
+
+							}
+								
+							?>
+								
+							</select>
+							<span class="utv-hint"><?php _e('ex: the order that videos will be displayed', 'utvg'); ?></span>
+						</p>						
+						<p>
+							<label><?php _e('Album Thumbnail:', 'utvg'); ?></label>
+							<div id="utv-thumbnail-select">
+								
+							<?php
+								
+							if(!empty($thumbs))
+							{
+								
+								foreach($thumbs as $value)
+								{
+									
+								?>
+									
+									<div>		
+										<img src="<?php echo $dir . '/utubevideo-cache/' . $value['VID_URL'] . '.jpg';?>" class="utv-preview-thumb"/>
+										<input type="radio" name="albumThumbSelect" value="<?php echo $value['VID_URL']; ?>" <?php echo ($rows[0]['ALB_THUMB'] == $value['VID_URL'] ? 'checked' : ''); ?>/>
+									</div>
+									
+								<?php
+									
+								}
+									
+							}
+							else
+								echo '<span class="utv-admin-error">' . __('Oops, you have not added any videos to this album yet', 'utvg') . '</span>';
+									
+							?>
+							
+							</div>
+							<span class="utv-hint"><?php _e('ex: choose the thumbnail for the album', 'utvg'); ?></span>
+						</p>
+						<p class="submit">  
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<input type="hidden" name="prevSlug" value="<?php echo $rows[0]['ALB_SLUG']; ?>"/>
+							<input type="submit" name="saveAlbumEdit" id="saveAlbumEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_edit_album'); ?>
+							<a href="?page=utubevideo&view=gallery&id=<?php echo $pid; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
+						</p> 
+					</form>
+				</div>
+
+			<?php
+				
+			}
+			//display add video form//
+			elseif($_GET['view'] == 'videoadd')
+			{
+				
+				$id = sanitize_key($_GET['id']);
+				$pid = sanitize_key($_GET['pid']);
+				$rows = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $id, ARRAY_A);
+				
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#addVideo').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+					
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php echo __('Add New Video to', 'utvg') . ' ' . '<span class="utv-sub-h3">( ' . stripslashes($rows[0]['ALB_NAME']) . ' )</span>'; ?></h3>
+						<p>
+							<label><?php _e('Video Source:', 'utvg'); ?></label>
+							<select name="videoSource"/>
+								<option value="youtube">Youtube</option>
+								<option value="vimeo">Vimeo</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the source of the video', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Video URL:', 'utvg'); ?></label>
+							<input type="text" name="url" class="utv-required"/>
+							<span class="utv-hint"><?php _e('ex: video url', 'utvg'); ?></span>
+						</p>		
+						<p>
+							<label><?php _e('Video Name:', 'utvg'); ?></label>
+							<input type="text" name="vidname" class="utv-required"/>
+							<span class="utv-hint"><?php _e('ex: the name for the video', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
+							<select name="thumbType"/>
+								<option value="rectangle">Rectangle</option>
+								<option value="square">Square</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Video Quality:', 'utvg'); ?></label>
+							<select name="videoQuality"/>
+								<option value="large">480p</option>
+								<option value="hd720">720p</option>
+								<option value="hd1080">1080p</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the starting quality of the video (applies only to YouTube)', 'utvg'); ?></span>
+						</p>						
+						<p>
+							<label><?php _e('Chromeless Video:', 'utvg'); ?></label>
+							<input type="checkbox" name="videoChrome" />
+							<span class="utv-hint"><?php _e('ex: hide the playback controls of the video (applies only to YouTube)', 'utvg'); ?></span>
+						</p>					
+						<p class="submit">  
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<input type="submit" name="addVideo" id="addVideo" value="<?php _e('Save New Video', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_add_video'); ?>
+							<a href="?page=utubevideo&view=album&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
+						</p> 
+					</form>
+				</div>
+					
+			<?php
+
+			}
+			//display add playlist form//
+			elseif($_GET['view'] == 'playlistadd')
+			{
+			
+				$id = sanitize_key($_GET['id']);
+				$pid = sanitize_key($_GET['pid']);
+				$rows = $wpdb->get_results('SELECT ALB_NAME FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $id, ARRAY_A);
+				
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#addPlaylist').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+					
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php echo __('Add New Playlist to', 'utvg') . ' ' . '<span class="utv-sub-h3">( ' . stripslashes($rows[0]['ALB_NAME']) . ' )</span>'; ?></h3>
+						<p>
+							<label><?php _e('Playlist Source:', 'utvg'); ?></label>
+							<select name="playlistSource"/>
+								<option value="youtube">Youtube</option>
+								<option value="vimeo">Vimeo</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the source of the video', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Playlist URL:', 'utvg'); ?></label>
+							<input type="text" name="url" class="utv-required"/>
+							<span class="utv-hint"><?php _e('ex: YouTube or Vimeo playlist url', 'utvg'); ?></span>
+						</p>		
+						<p>
+							<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
+							<select name="thumbType"/>
+								<option value="rectangle">Rectangle</option>
+								<option value="square">Square</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Video Quality:', 'utvg'); ?></label>
+							<select name="videoQuality"/>
+								<option value="large">480p</option>
+								<option value="hd720">720p</option>
+								<option value="hd1080">1080p</option>
+							</select>
+							<span class="utv-hint"><?php _e('ex: the starting quality of the playlist videos (applies only to YouTube)', 'utvg'); ?></span>
+						</p>						
+						<p>
+							<label><?php _e('Chromeless Video:', 'utvg'); ?></label>
+							<input type="checkbox" name="videoChrome" />
+							<span class="utv-hint"><?php _e('ex: hide the playback controls of the video (applies only to YouTube)', 'utvg'); ?></span>
+						</p>						
+						<p class="submit">  
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<input type="submit" name="addPlaylist" id="addPlaylist" value="<?php _e('Save New Playlist', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_add_playlist'); ?>
+							<a href="?page=utubevideo&view=album&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>			
+						</p> 
+					</form>
+				</div>
+					
+			<?php
+			}
+			//display video edit form//
+			elseif($_GET['view'] == 'videoedit')
+			{
+				
+				$id = sanitize_key($_GET['id']);
+				$pid = sanitize_key($_GET['pid']);
+				$pid = explode('-', $pid);
+				
+				$dir = wp_upload_dir();
+				$dir = $dir['baseurl'];
+						
+				$rows = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $id, ARRAY_A);
+					
+			?>
+			
+				<script>
+				
+					jQuery(function(){
+				
+						jQuery('#saveVideoEdit').click(function(){
+							
+							var form = jQuery(this).parents('form');
+							if(utCheckForm(form))
+								return false;
+							
+						});
+						
+					});
+				
+				</script>
+					
+				<div class="utv-formbox utv-top-formbox">
+					<form method="post">  
+						<h3><?php _e('Edit Video', 'utvg'); ?></h3>
+						<p>				
+							<img src="<?php echo $dir . '/utubevideo-cache/' . $rows[0]['VID_URL'] . '.jpg';?>" class="utv-preview-thumb"/>
+						</p>
+						<p>
+							<label><?php _e('Video Name:', 'utvg'); ?></label>
+							<input type="text" name="vidname" class="utv-required" value="<?php echo stripslashes($rows[0]['VID_NAME']); ?>"/>
+							<span class="utv-hint"><?php _e('ex: name of video', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Thumbnail Type:', 'utvg'); ?></label>
+							<select name="thumbType"/>
+								
+							<?php
+								
+							$opts = array(array('text' => __('Rectangle', 'utvg'), 'value' => 'rectangle'), array('text' => __('Square', 'utvg'), 'value' => 'square'));	
+						
+							foreach($opts as $value)
+							{
+								
+								if($value['value'] == $rows[0]['VID_THUMBTYPE'])
+									echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
+								else
+									echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
+
+							}
+							
+							?>
+									
+							</select>
+							<span class="utv-hint"><?php _e('ex: the type of thumbnail', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Video Quality:', 'utvg'); ?></label>
+							<select name="videoQuality"/>
+							
+							<?php
+							
+							$opts = array(array('text' => '480p', 'value' => 'large'), array('text' => '720p', 'value' => 'hd720'), array('text' => '1080p', 'value' => 'hd1080'));	
+						
+							foreach($opts as $value)
+							{
+								
+								if($value['value'] == $rows[0]['VID_QUALITY'])
+									echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
+								else
+									echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
+
+							}
+							
+							?>
+							
+							</select>
+							<span class="utv-hint"><?php _e('ex: the starting quality of the video', 'utvg'); ?></span>
+						</p>
+						<p>
+							<label><?php _e('Chromeless Video:', 'utvg'); ?></label>
+							<input type="checkbox" name="videoChrome"  <?php echo ($rows[0]['VID_CHROME'] == '0' ? 'checked' : ''); ?>/>
+							<span class="utv-hint"><?php _e('ex: hide the playback controls of the video', 'utvg'); ?></span>
+						</p>	
+						<p class="submit">  
+							<input type="hidden" name="key" value="<?php echo $id; ?>"/>
+							<input type="submit" name="saveVideoEdit" id="saveVideoEdit" value="<?php _e('Save Changes', 'utvg') ?>" class="button-primary"/> 
+							<?php wp_nonce_field('utubevideo_edit_video'); ?>
+							<a href="?page=utubevideo&view=album&id=<?php echo $pid[0]; ?>&pid=<?php echo $pid[1]; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>							
+						</p> 
+					</form>
 				</div>
 
 			<?php
@@ -1215,7 +1083,12 @@ class utvAdmin
 		//display main options and galleries//
 		else
 		{
-
+		
+			require_once 'class/utvGalleryListTable.class.php';
+					
+			$galleries = new utvGalleryListTable();
+			$galleries->prepare_items(); 
+				
 		?>
 			
 			<script>
@@ -1239,7 +1112,7 @@ class utvAdmin
 
 						jQuery.post(ajaxurl, data, function(response) {
 
-							if(response == 'true')
+							if(response)
 								$item.fadeOut(400, function(){ $item.remove(); });
 								
 						});
@@ -1252,54 +1125,26 @@ class utvAdmin
 			</script>
 				
 			<div class="utv-formbox">
+				<form method="post">
+					<p class="submit utv-actionbar">
+						<a href="?page=utubevideo&view=gallerycreate" class="utv-link-submit-button"><?php _e('Create New Gallery', 'utvg'); ?></a>
+					</p>
+				</form>
 				<h3>Galleries</h3>
 				
-				<?php
-				
-				require_once(plugin_dir_path(__FILE__) . 'class/utvGalleryListTable.class.php');
-				
-				$data = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'utubevideo_dataset ORDER BY DATA_ID', ARRAY_A);
-				
-				$cells = array();
-				
-				foreach($data as $val)
-				{
-				
-					array_push($cells, array(
-						'ID' => $val['DATA_ID'],
-						'name' => $val['DATA_NAME'],
-						'shortcode' => '[utubevideo id="' . $val['DATA_ID'] . '"]',
-						'dateadd' => date('Y/m/d', $val['DATA_UPDATEDATE']),
-						'albums' => $val['DATA_ALBCOUNT'],
-						'actions' => '<form method="post">
-										<input class="utv-link-button" type="submit" name="editGalleryForm" value="' . __('Edit', 'utvg') . '"/>
-										<input class="utv-link-button ut-delete-gallery" type="submit" name="delSet" value="' . __('Delete', 'utvg') . '"/>
-										<a href="?page=utubevideo_settings_galleries&act=viewdset&id=' . $val['DATA_ID'] . '">' . __('View', 'utvg') . '</a>
-										<input type="hidden" name="key" class="ut-key" value="' .  $val['DATA_ID'] . '"/>
-									 </form>'
-					));
-					
-				}
-				
-				$galleries = new utvGalleryListTable($cells);
-				$galleries->prepare_items(); 
-				$galleries->display(); 
-
-				?>
-			
 				<form method="post">
-					<p class="submit">
-						<input class="button-secondary" type="submit" name="addGalleryForm" value="<?php _e('Create New Gallery', 'utvg'); ?>"/>
-					</p>
+				
+					<?php $galleries->display(); ?>
+				
 				</form>
 			</div>
 			<div class="postbox">
-				<h3 class="hndle utv-postbox"><span><?php _e("FAQ's", "utvg"); ?></span></h3>
+				<h3 class="hndle utv-postbox"><span><?php _e('FAQ\'s', 'utvg'); ?></span></h3>
 				<div class="inside">
 					<div class="utv-formbox">
 						<ul>
 							<li>For extra help with using uTubeVideo Gallery visit the <a href="http://www.codeclouds.net/utubevideo-gallery-documentation/" target="_blank">documentation page</a>.</li>
-							<li>For any additional help or issues you may also contact me at <a href="mailto:dustin@codeclouds.net">dustin@codeclouds.net</a> or <a hef="http://codeclouds.net/contact/">via my website</a>.</li>
+							<li>For any additional help or issues you may also contact me at <a href="mailto:dustin@codeclouds.net">dustin@codeclouds.net</a> or <a href="http://codeclouds.net/contact/">via my website</a>.</li>
 						</ul>
 					</div>
 				</div>
@@ -1329,22 +1174,17 @@ class utvAdmin
 		
 		<?php screen_icon('utubevideo-gallery'); ?>
 			
-		<h2 id="utv-masthead">uTubeVideo Settings</h2>
+		<h2 id="utv-masthead">uTubeVideo <?php _e('Settings', 'utvg'); ?></h2>
 			
 		<script>
 				
 			jQuery(function(){
+			
+				var playerWidth = jQuery('#playerWidth');
+				var playerHeight = jQuery('#playerHeight');
 				
 				jQuery('div.updated, div.e-message').delay(3000).queue(function(){jQuery(this).remove();});
-				
-				jQuery('#resetWidth').click(function(){
-		
-					jQuery('#playerWidth').val('950');
-					jQuery('#playerHeight').val('537');
-					return false;
-						
-				});
-					
+
 				jQuery('#resetOverlayColor').click(function(){
 		
 					jQuery('#fancyboxOverlayColor').val('#000');
@@ -1358,16 +1198,45 @@ class utvAdmin
 					return false;
 						
 				});
-						
-				jQuery('#playerWidth').keyup(function(){
-						
-					jQuery('#playerHeight').val(Math.round(jQuery('#playerWidth').val() / 1.77));
+				
+				jQuery('#resetThumbnailWidth').click(function(){
+				
+					jQuery('#thumbnailWidth').val('150');
+					return false;
+					
+				});
+				
+				jQuery('#resetThumbnailPadding').click(function(){
+				
+					jQuery('#thumbnailPadding').val('10');
+					return false;
+					
+				});
+				
+				jQuery('#resetThumbnailBorderRadius').click(function(){
+				
+					jQuery('#thumbnailBorderRadius').val('3');
+					return false;
+					
+				});
+				
+				jQuery('#resetWidth').click(function(){
+		
+					playerWidth.val('950');
+					playerHeight.val('537');
+					return false;
 						
 				});
 						
-				jQuery('#playerHeight').keyup(function(){
+				playerWidth.keyup(function(){
 						
-					jQuery('#playerWidth').val(Math.round(jQuery('#playerHeight').val() * 1.77));
+					playerHeight.val(Math.round(playerWidth.val() / 1.77));
+						
+				});
+						
+				playerHeight.keyup(function(){
+						
+					playerWidth.val(Math.round(playerHeight.val() * 1.77));
 					
 				});
 					
@@ -1379,15 +1248,28 @@ class utvAdmin
 			<form method="post">  
 				<h3>General Settings</h3>					
 				<p>
-					<label><?php _e('Remove Magnific Popup Scripts:', 'utvg'); ?></label>
-					<input type="checkbox" name="skipMagnificPopup" <?php echo ($this->_options['skipMagnificPopup'] == 'yes' ? 'checked' : ''); ?>/>
-					<span class="utv-hint"><?php _e('ex: check only if you are already loading the Magnific Popup scripts elsewhere', 'utvg'); ?></span>
+					<label><?php _e('Video Player Controls Theme:', 'utvg'); ?></label>
+					<select name="playerControlTheme">
+						
+					<?php
+						
+					$opts = array(array('text' => __('Dark', 'utvg'), 'value' => 'dark'), array('text' => __('Light', 'utvg'), 'value' => 'light'));	
+					
+					foreach($opts as $value)
+					{
+							
+						if($value['value'] == $this->_options['playerControlTheme'])
+							echo '<option value="' . $value['value'] . '" selected>' . $value['text'] . '</option>';
+						else
+							echo '<option value="' . $value['value'] . '">' . $value['text'] . '</option>';
+					
+					}
+							
+					?>
+						
+					</select>
+					<span class="utv-hint"><?php _e("ex: theme of the player's controls (if shown - YouTube only)", "utvg"); ?></span>
 				</p> 
-				<p>
-					<label><?php _e('Do not use permalinks:', 'utvg'); ?></label>
-					<input type="checkbox" name="skipSlugs" <?php echo ($this->_options['skipSlugs'] == 'yes' ? 'checked' : ''); ?>/>
-					<span class="utv-hint"><?php _e('ex: check to use "?aid=" for album links instead of permalinks', 'utvg'); ?></span>
-				</p>
 				<p>
 					<label><?php _e('Video Player Controlbar Color:', 'utvg'); ?></label>
 					<select name="playerProgressColor">
@@ -1409,7 +1291,7 @@ class utvAdmin
 					?>
 						
 					</select>
-					<span class="utv-hint"><?php _e("ex: color of the player's progress bar", "utvg"); ?></span>
+					<span class="utv-hint"><?php _e("ex: color of the player's progress bar (YouTube only)", "utvg"); ?></span>
 				</p> 
 				<p>
 					<label><?php _e('Max Video Player Dimensions:', 'utvg'); ?></label>
@@ -1418,6 +1300,24 @@ class utvAdmin
 					<input type="text" name="playerHeight" id="playerHeight" value="<?php echo $this->_options['playerHeight']; ?>"/>
 					<button id="resetWidth" class="button-secondary"><?php _e('Reset', 'utvg'); ?></button>
 					<span class="utv-hint"><?php _e('ex: max dimensions of video player', 'utvg'); ?></span>
+				</p>
+				<p>
+					<label><?php _e('Thumbnail Width:', 'utvg'); ?></label>
+					<input type="number" name="thumbnailWidth" id="thumbnailWidth" value="<?php echo $this->_options['thumbnailWidth']; ?>"/>
+					<button id="resetThumbnailWidth" class="button-secondary"><?php _e('Reset', 'utvg'); ?></button>
+					<span class="utv-hint"><?php _e('ex: width of video thumbnails', 'utvg'); ?></span>
+				</p> 
+				<p>
+					<label><?php _e('Thumbnail Padding:', 'utvg'); ?></label>
+					<input type="number" name="thumbnailPadding" id="thumbnailPadding" value="<?php echo $this->_options['thumbnailPadding']; ?>"/>
+					<button id="resetThumbnailPadding" class="button-secondary"><?php _e('Reset', 'utvg'); ?></button>
+					<span class="utv-hint"><?php _e('ex: padding for video thumbnails', 'utvg'); ?></span>
+				</p>
+				<p>
+					<label><?php _e('Thumbnail Border Radius:', 'utvg'); ?></label>
+					<input type="number" name="thumbnailBorderRadius" id="thumbnailBorderRadius" value="<?php echo $this->_options['thumbnailBorderRadius']; ?>"/>
+					<button id="resetThumbnailBorderRadius" class="button-secondary"><?php _e('Reset', 'utvg'); ?></button>
+					<span class="utv-hint"><?php _e('ex: roundness of thumbnail corners, set to 0 to disable', 'utvg'); ?></span>
 				</p>
 				<p>
 					<label><?php _e('Overlay Color:', 'utvg'); ?></label>
@@ -1431,6 +1331,16 @@ class utvAdmin
 					<button id="resetOverlayOpacity" class="button-secondary"><?php _e('Reset', 'utvg'); ?></button>
 					<span class="utv-hint"><?php _e('ex: opacity of lightbox overlay [ 0 - 1.0 ]', 'utvg'); ?></span>
 				</p> 
+				<p>
+					<label><?php _e('Remove Magnific Popup Scripts:', 'utvg'); ?></label>
+					<input type="checkbox" name="skipMagnificPopup" <?php echo ($this->_options['skipMagnificPopup'] == 'yes' ? 'checked' : ''); ?>/>
+					<span class="utv-hint"><?php _e('ex: check only if you are already loading the Magnific Popup scripts elsewhere', 'utvg'); ?></span>
+				</p> 
+				<p>
+					<label><?php _e('Do not use permalinks:', 'utvg'); ?></label>
+					<input type="checkbox" name="skipSlugs" <?php echo ($this->_options['skipSlugs'] == 'yes' ? 'checked' : ''); ?>/>
+					<span class="utv-hint"><?php _e('ex: check to use "?aid=" for album links instead of permalinks', 'utvg'); ?></span>
+				</p>				
 				<p>
 					
 					<?php
@@ -1480,9 +1390,13 @@ class utvAdmin
 				
 					$opts['skipMagnificPopup'] = (isset($_POST['skipMagnificPopup']) ? 'yes' : 'no');
 					$opts['skipSlugs'] = (isset($_POST['skipSlugs']) ? 'yes' : 'no');
-					$opts['playerProgressColor'] = htmlentities($_POST['playerProgressColor'], ENT_QUOTES, 'UTF-8');
+					$opts['playerControlTheme'] = sanitize_text_field($_POST['playerControlTheme']);
+					$opts['playerProgressColor'] = sanitize_text_field($_POST['playerProgressColor']);
 					$opts['fancyboxOverlayColor'] = (isset($_POST['fancyboxOverlayColor']) ? sanitize_text_field($_POST['fancyboxOverlayColor']) : '#000');
 					$opts['fancyboxOverlayOpacity'] = (isset($_POST['fancyboxOverlayOpacity']) ? sanitize_text_field($_POST['fancyboxOverlayOpacity']) : '0.85');
+					$opts['thumbnailWidth'] = (isset($_POST['thumbnailWidth']) ? sanitize_text_field($_POST['thumbnailWidth']) : '150');
+					$opts['thumbnailPadding'] = (isset($_POST['thumbnailPadding']) ? sanitize_text_field($_POST['thumbnailPadding']) : '10');
+					$opts['thumbnailBorderRadius'] = (isset($_POST['thumbnailBorderRadius']) ? sanitize_text_field($_POST['thumbnailBorderRadius']) : '3');
 						
 					if(!empty($_POST['playerWidth']) && !empty($_POST['playerHeight']))
 					{
@@ -1498,12 +1412,48 @@ class utvAdmin
 						$opts['playerHeight'] = 537;
 						
 					}
-
+					
+					if(preg_match("/[^0-9]/", $opts['thumbnailWidth']) || preg_match("/[^0-9]/", $opts['thumbnailPadding']) || preg_match("/[^0-9]/", $opts['thumbnailBorderRadius']))
+					{
+						
+						echo '<div class="error e-message"><p>' . __('Oops... thumbnail width, padding, and radius must contain only numbers.', 'utvg') . '</p></div>';
+						return;
+						
+					}
+					
+					if($opts['thumbnailWidth'] != $this->_options['thumbnailWidth'])
+					{
+					
+						require_once 'class/utvAdminGen.class.php';
+						$utvAdminGen = new utvAdminGen($opts);
+						$utvAdminGen->setPath();
+					
+						$data = $wpdb->get_results('SELECT VID_URL, VID_SOURCE, VID_THUMBTYPE FROM ' . $wpdb->prefix . 'utubevideo_video', ARRAY_A);
+						
+						foreach($data as $val)
+						{
+						
+							if($val['VID_SOURCE'] == 'vimeo')
+							{
+							
+								$data = $utvAdminGen->queryAPI('https://vimeo.com/api/v2/video/' . $val['VID_URL'] . '.json');
+								$sourceURL = $data[0]['thumbnail_large'];
+							
+							}
+							else
+								$sourceURL = 'http://img.youtube.com/vi/' . $val['VID_URL'] . '/0.jpg';
+											
+							$utvAdminGen->saveThumbnail($sourceURL, $val['VID_URL'], $val['VID_THUMBTYPE'], true);
+								
+						}
+						
+					}
+					
 					if(update_option('utubevideo_main_opts', $opts))
 						echo '<div class="updated"><p>Settings saved</p></div>'; 
 					else
 						echo '<div class="error e-message"><p>' . __('Oops... something went wrong or there were no changes needed', 'utvg') . '</p></div>';
-					
+
 				}
 						
 			}
@@ -1514,25 +1464,15 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_save_gallery'))
 				{
 				
-					$shortname = htmlentities($_POST['galleryName'], ENT_QUOTES, 'UTF-8');
-					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES, 'UTF-8');
-					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES, 'UTF-8');
-					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES, 'UTF-8');
-					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES, 'UTF-8');
+					$shortname = sanitize_text_field($_POST['galleryName']);
+					$albumsort = sanitize_text_field($_POST['albumSort']);
+					$displaytype = sanitize_text_field($_POST['displayType']);
 					$time = current_time('timestamp');
 					
-					if(empty($shortname) || empty($albumsort) || empty($displaytype) || !isset($thumbwidth) || !isset($thumbpadding))
+					if(empty($shortname) || empty($albumsort) || empty($displaytype))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
-						return;
-						
-					}
-					
-					if(preg_match("/[^0-9]/", $thumbwidth) || preg_match("/[^0-9]/", $thumbpadding))
-					{
-						
-						echo '<div class="error e-message"><p>' . __('Oops... thumbnail width and padding must contain only numbers.', 'utvg') . '</p></div>';
 						return;
 						
 					}
@@ -1541,8 +1481,6 @@ class utvAdmin
 						$wpdb->prefix . 'utubevideo_dataset', 
 						array(
 							'DATA_NAME' => $shortname,
-							'DATA_THUMBWIDTH' => $thumbwidth,
-							'DATA_THUMBPADDING' => $thumbpadding,
 							'DATA_SORT' => $albumsort,
 							'DATA_DISPLAYTYPE' => $displaytype,
 							'DATA_UPDATEDATE' => $time
@@ -1562,15 +1500,12 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_gallery'))
 				{
 				
-					$galname = htmlentities($_POST['galname'], ENT_QUOTES, 'UTF-8');
-					$thumbwidth = htmlentities($_POST['thumbWidth'], ENT_QUOTES, 'UTF-8');
-					$thumbpadding = htmlentities($_POST['thumbPadding'], ENT_QUOTES, 'UTF-8');
-					$oldthumbwidth = htmlentities($_POST['oldThumbWidth'], ENT_QUOTES, 'UTF-8');
-					$albumsort = htmlentities($_POST['albumSort'], ENT_QUOTES, 'UTF-8');
-					$displaytype = htmlentities($_POST['displayType'], ENT_QUOTES, 'UTF-8');
-					$key = sanitize_text_field($_POST['key']);
+					$galleryName = sanitize_text_field($_POST['galname']);
+					$albumSort = sanitize_text_field($_POST['albumSort']);
+					$displayType = sanitize_text_field($_POST['displayType']);
+					$key = sanitize_key($_POST['key']);
 					
-					if(empty($galname) || !isset($key) || !isset($thumbwidth) || !isset($thumbpadding) || !isset($oldthumbwidth) || empty($albumsort) || empty($displaytype))
+					if(empty($galleryName) || !isset($key) || empty($albumSort) || empty($displayType))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
@@ -1578,73 +1513,12 @@ class utvAdmin
 						
 					}
 					
-					if(preg_match("/[^0-9]/", $thumbwidth) || preg_match("/[^0-9]/", $thumbpadding))
-					{
-						
-						echo '<div class="error e-message"><p>' . __('Oops... thumbnail width and padding must contain only numbers.', 'utvg') . '</p></div>';
-						return;
-						
-					}
-					
-					if($thumbwidth != $oldthumbwidth)
-					{
-					
-						$dir = wp_upload_dir();
-						$dir = $dir['basedir'];	
-					
-						$ids = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $key, ARRAY_A);
-						
-						$text = '';
-						
-						foreach($ids as $val)
-							$text .= ',' . $val['ALB_ID'];
-						
-						$text = substr($text, 1);
-						
-						$data = $wpdb->get_results('SELECT VID_URL, VID_THUMBTYPE FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID IN (' . $text . ')', ARRAY_A);
-					
-						foreach($data as $val)
-						{
-						
-						
-							$yurl = 'http://img.youtube.com/vi/' . $val['VID_URL'] . '/0.jpg';
-					
-							//save image for video into cache//
-							$image = wp_get_image_editor($yurl);
-
-							$spath = $dir . '/utubevideo-cache/' . $val['VID_URL'] . '.jpg';
-								
-							if(!is_wp_error($image))
-							{
-							
-								if($val['VID_THUMBTYPE'] == 'square')
-									$image->resize($thumbwidth, $thumbwidth, true);
-								else
-									$image->resize($thumbwidth, $thumbwidth);
-
-								$image->save($spath);
-							
-							}
-							//break for image processing errors//
-							else
-							{
-								
-								echo '<div class="error"><p>' . __('Oops... there seems to be a problem updating the video thumbnail(s). Most likely you need to install a PHP image processing library, such as GD or Imagick. Please send the following information to the developer if the problem persists.', 'utvg') . '</p><p><pre>' . print_r($image, true) . '</pre></p></div>';
-								return;
-									
-							}
-						}
-
-					}
-					
 					if($wpdb->update(
 						$wpdb->prefix . 'utubevideo_dataset', 
 						array( 
-							'DATA_NAME' => $galname,
-							'DATA_THUMBWIDTH' => $thumbwidth,
-							'DATA_THUMBPADDING' => $thumbpadding,
-							'DATA_SORT' => $albumsort,
-							'DATA_DISPLAYTYPE' => $displaytype
+							'DATA_NAME' => $galleryName,
+							'DATA_SORT' => $albumSort,
+							'DATA_DISPLAYTYPE' => $displayType
 						), 
 						array('DATA_ID' => $key)
 					) >= 0)
@@ -1662,34 +1536,23 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_save_album'))
 				{
 				
-					$key = sanitize_text_field($_GET['id']);
-					$alname = htmlentities($_POST['alname'], ENT_QUOTES, 'UTF-8');	
-					$vidsort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');	
-
-					if(empty($alname) || empty($vidsort) || !isset($key))
+					$albumName = sanitize_text_field($_POST['alname']);	
+					$videoSort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');
+					$key = sanitize_key($_POST['key']);
+					$time = current_time('timestamp');
+										
+					if(empty($albumName) || empty($videoSort) || !isset($key))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
 						return;
 						
 					}
+							
+					require_once 'class/utvAdminGen.class.php';
+					$utvAdminGen = new utvAdminGen($this->_options);
+					$slug = $utvAdminGen->generateSlug($albumName, $wpdb);
 					
-					$time = current_time('timestamp');
-					
-					$rawslugs = $wpdb->get_results('SELECT ALB_SLUG FROM ' . $wpdb->prefix . 'utubevideo_album', ARRAY_N);
-					
-					foreach($rawslugs as $item)
-						$sluglist[] = $item[0];
-						
-					$mark = 1;
-					$slug = strtolower($alname);
-					$slug = str_replace(' ', '-', $slug);
-					$slug = html_entity_decode($slug, ENT_QUOTES);
-					$slug = preg_replace("/[^a-zA-Z0-9-]+/", "", $slug);
-					
-					if(!empty($sluglist))
-						$this->checkslug($slug, $sluglist, $mark);
-
 					//get current album count for gallery//
 					$gallery = $wpdb->get_results('SELECT DATA_ALBCOUNT FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $key, ARRAY_A);
 					$albcnt = $gallery[0]['DATA_ALBCOUNT'] + 1;
@@ -1697,10 +1560,10 @@ class utvAdmin
 					if($wpdb->insert(
 						$wpdb->prefix . 'utubevideo_album', 
 						array(
-							'ALB_NAME' => $alname,
+							'ALB_NAME' => $albumName,
 							'ALB_SLUG' => $slug,
 							'ALB_THUMB' => 'missing',
-							'ALB_SORT' => $vidsort,
+							'ALB_SORT' => $videoSort,
 							'ALB_UPDATEDATE' => $time,
 							'DATA_ID' => $key
 						)
@@ -1726,69 +1589,58 @@ class utvAdmin
 				{
 						
 					$url = sanitize_text_field($_POST['url']);
-					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES, 'UTF-8');
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
+					$videoName = sanitize_text_field($_POST['vidname']);
+					$thumbType = sanitize_text_field($_POST['thumbType']);
+					$quality = sanitize_text_field($_POST['videoQuality']);
 					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
-					$key = sanitize_text_field($_POST['key']);
+					$videoSource = sanitize_text_field($_POST['videoSource']);
+					$key = sanitize_key($_POST['key']);
+					$time = current_time('timestamp');
 					
-					if(empty($url) || empty($vidname) || empty($thumbType) || empty($quality) || !isset($chrome) || !isset($key))
+					if(empty($url) || empty($videoName) || empty($thumbType) || empty($quality) || !isset($chrome) || empty($videoSource) || !isset($key))
 					{
 					
-						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
+						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value.', 'utvg') . '</p></div>';
 						return;
 						
 					}
-					
-					$dir = wp_upload_dir();
-					$dir = $dir['basedir'];		
-					$time = current_time('timestamp');
 					
 					//get current video count for album//
 					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT, DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
 					$vidcnt = $album[0]['ALB_VIDCOUNT'] + 1;
 					
-					//get gallery info//
-					$gallery = $wpdb->get_results('SELECT DATA_THUMBWIDTH FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $album[0]['DATA_ID'], ARRAY_A);
-					$thumbwidth = $gallery[0]['DATA_THUMBWIDTH'];
+					require_once 'class/utvAdminGen.class.php';
+					$utvAdminGen = new utvAdminGen($this->_options);
+					$utvAdminGen->setPath();
 					
-					//parse video url to get video id//
-					$url = parse_url($url);
-					parse_str($url['query']);
-					
-					$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
-					
-					//save image for video into cache//
-					$image = wp_get_image_editor($yurl);
-
-					$spath = $dir . '/utubevideo-cache/' . $v . '.jpg';
+					if(!$vID = $utvAdminGen->parseURL($url, $videoSource, 'video')){
 						
-					if(!is_wp_error($image))
-					{
-					
-						if($thumbType == 'square')
-							$image->resize($thumbwidth, $thumbwidth, true);
-						else
-							$image->resize($thumbwidth, $thumbwidth);
-
-						$image->save($spath);
-					
-					}
-					//break for image processing errors//
-					else
-					{
-						
-						echo '<div class="error"><p>' . __('Oops... there seems to be a problem saving the thumbnail. Most likely you need to install a PHP image processing library, such as GD or Imagick. Please send the following information to the developer if the problem persists.', 'utvg') . '</p><p><pre>' . print_r($image, true) . '</pre></p></div>';
+						echo '<div class="error e-message"><p>' . __('Invalid URL.', 'utvg') . '</p></div>';
 						return;
-							
+					
 					}
+					
+					if($videoSource == 'youtube'){
+						
+						$sourceURL = 'http://img.youtube.com/vi/' . $vID . '/0.jpg';
+					
+					}elseif($videoSource == 'vimeo'){
+					
+						$data = $utvAdminGen->queryAPI('https://vimeo.com/api/v2/video/' . $vID . '.json');
+						$sourceURL = $data[0]['thumbnail_large'];
+	
+					}
+					
+					if(!$utvAdminGen->saveThumbnail($sourceURL, $vID, $thumbType))
+						return;
 					
 					//insert video and update video count for album//
 					if($wpdb->insert(
 						$wpdb->prefix . 'utubevideo_video', 
 						array(
-							'VID_NAME' => $vidname,
-							'VID_URL' => $v,
+							'VID_SOURCE' => $videoSource,
+							'VID_NAME' => $videoName,
+							'VID_URL' => $vID,
 							'VID_THUMBTYPE' => $thumbType,
 							'VID_QUALITY' => $quality,
 							'VID_CHROME' => $chrome,
@@ -1802,7 +1654,7 @@ class utvAdmin
 						), 
 						array('ALB_ID' => $key)
 					) >= 0)
-						echo '<div class="updated"><p>' . __('Video added to album', 'utvg') . '</p></div>';
+						echo '<div class="updated"><p>' . __('Video added to album.', 'utvg') . '</p></div>';
 					else
 						echo '<div class="error e-message"><p>' . __('Oops... something went wrong. Try again.', 'utvg') . '</p></div>';
 								
@@ -1816,12 +1668,15 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_add_playlist'))
 				{
 				
+					$playlistSource = sanitize_text_field($_POST['playlistSource']);
 					$url = sanitize_text_field($_POST['url']);
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
-					$key = sanitize_text_field($_POST['key']);
+					$thumbType = sanitize_text_field($_POST['thumbType']);
+					$quality = sanitize_text_field($_POST['videoQuality']);
+					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
+					$key = sanitize_key($_POST['key']);
+					$time = current_time('timestamp');					
 					
-					if(empty($url) || empty($thumbType) || empty($quality) || !isset($key))
+					if(empty($url) || empty($thumbType) || empty($quality) || empty($playlistSource) || !isset($key))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
@@ -1829,35 +1684,41 @@ class utvAdmin
 						
 					}
 					
-					$time = current_time('timestamp');
-					$count = 0;
-					$pos = 51;
-					
-					$dir = wp_upload_dir();
-					$dir = $dir['basedir'];		
+					require_once 'class/utvAdminGen.class.php';
+					$utvAdminGen = new utvAdminGen($this->_options);
+					$utvAdminGen->setPath();
 					
 					//get current video count for album//
-					$rows = $wpdb->get_results('SELECT ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+					$addedcount = 0;
 					
-					//parse video url to get video id//
-					$url = parse_url($url);
-					parse_str($url['query']);
-					
-					$data = wp_remote_get('http://gdata.youtube.com/feeds/api/playlists/' . $list . '?v=2&alt=json&max-results=50');
-					
-					if($data['response']['code'] == 200)
+					if($playlistSource == 'youtube')
 					{
 					
-						$data = json_decode($data['body'], true);
-						$maxvids = $data['feed']['openSearch$totalResults']['$t'];
+						$pos = 51;
+						$blockedVideos = array('private', 'blocked', 'suspended', 'requesterRegion');
+
+						//parse video url to get video id//
+						if(!$listID = $utvAdminGen->parseURL($url, $playlistSource, 'playlist')){
+						
+							echo '<div class="error e-message"><p>' . __('Invalid URL.', 'utvg') . '</p></div>';
+							return;
+							
+						}
+						
+						if(!$data = $utvAdminGen->queryAPI('http://gdata.youtube.com/feeds/api/playlists/' . $listID . '?v=2&alt=json&max-results=50')) 
+							return;
+							
+						$totalVideos = $data['feed']['openSearch$totalResults']['$t'];
 						$data = $data['feed']['entry'];
 						
 						//more requests for data
-						while($maxvids >= $pos)
+						while($totalVideos >= $pos)
 						{
 						
-							$ndata = wp_remote_get('http://gdata.youtube.com/feeds/api/playlists/' . $list . '?v=2&alt=json&start-index=' . $pos . '&max-results=50');
-							$ndata = json_decode($ndata['body'], true);
+							if(!$ndata = $utvAdminGen->queryAPI('http://gdata.youtube.com/feeds/api/playlists/' . $listID . '?v=2&alt=json&start-index=' . $pos . '&max-results=50'))
+								return;
+
 							$ndata = $ndata['feed']['entry'];
 							
 							$data = array_merge($data, $ndata);
@@ -1868,73 +1729,107 @@ class utvAdmin
 						foreach($data as $val)
 						{
 						
-							if(!isset($val['app$control']))
-							{
-						
+							//check to make sure video is not deleted or private
+							if(isset($val['app$control']['yt$state']['reasonCode']) && !in_array($val['app$control']['yt$state']['reasonCode'], $blockedVideos) || isset($val['media$group']['yt$duration']['seconds']) && $val['media$group']['yt$duration']['seconds'] > 0)
+							{			
+
 								$name = $val['media$group']['media$title']['$t'];
 								$v = $val['media$group']['yt$videoid']['$t'];
-								$yurl = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
+								$sourceURL = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
 							
-								//save image for video into cache//
-								$image = wp_get_image_editor($yurl);
-
-								$spath = $dir . '/utubevideo-cache/' . $v . '.jpg';
-									
-								if(!is_wp_error($image))
-								{
-								
-									if($thumbType == 'square')
-										$image->resize(150, 150, true);
-									else
-										$image->resize(150, 150);
-
-									$image->save($spath);
-
-								}
-								//break for image processing errors//
-								else
-								{
-									
-									echo '<div class="error"><p>' . __('Oops... there seems to be a problem saving the thumbnail. Most likely you need to install a PHP image processing library, such as GD or Imagick. Please send the following information to the developer if the problem persists.', 'utvg') . '</p><p><pre>' . print_r($image, true) . '</pre></p></div>';
-									return;
-										
-								}								
+								$utvAdminGen->saveThumbnail($sourceURL, $v, $thumbType, true);
 								
 								$wpdb->insert(
 									$wpdb->prefix . 'utubevideo_video', 
 									array(
+										'VID_SOURCE' => $playlistSource,
 										'VID_NAME' => $name,
 										'VID_URL' => $v,
 										'VID_THUMBTYPE' => $thumbType,
 										'VID_QUALITY' => $quality,
+										'VID_CHROME' => $chrome,
 										'VID_UPDATEDATE' => $time,
 										'ALB_ID' => $key
 									)
 								);
-									
-								$count++;
-				
+								
+								$addedcount++;
+
 							}
 							
 						}
 						
-						$vidcnt = $rows[0]['ALB_VIDCOUNT'] + $count;
-			
-						if($wpdb->update(
-							$wpdb->prefix . 'utubevideo_album', 
-							array( 
-								'ALB_VIDCOUNT' => $vidcnt
-							), 
-							array('ALB_ID' => $key)
-						) >= 0)
-							echo '<div class="updated"><p>' . __('Playlist added to album', 'utvg') . '</p></div>';
+					}
+					elseif($playlistSource == 'vimeo')
+					{
+					
+						if(!$albumID = $utvAdminGen->parseURL($url, $playlistSource, 'playlist')){
+						
+							echo '<div class="error e-message"><p>' . __('Invalid URL.', 'utvg') . '</p></div>';
+							return;
+						
+						}
+						
+						$data = Array();
+						
+						if(!$albumData = $utvAdminGen->queryAPI('https://vimeo.com/api/v2/album/' . $albumID . '/info.json'))
+							return;
+
+						if($albumData['total_videos'] >= 60)
+							$pages = 3;
 						else
-							echo '<div class="error e-message"><p>' . __('Oops... something went wrong', 'utvg') . '</p></div>';
+							$pages = ceil($albumData['total_videos'] / 20);
+					
+						for($i = 1; $i <= $pages; $i++)
+						{
+						
+							if(!$ndata = $utvAdminGen->queryAPI('https://vimeo.com/api/v2/album/' . $albumID . '/videos.json?page=' . $i))
+								return;
+								
+							$data = array_merge($data, $ndata);
+
+						}
+							
+						foreach($data as $val)
+						{
+						
+							$name = $val['title'];
+							$v = $val['id'];
+							$sourceURL = $val['thumbnail_large'];
+							
+							$utvAdminGen->saveThumbnail($sourceURL, $v, $thumbType, true);
+								
+							$wpdb->insert(
+								$wpdb->prefix . 'utubevideo_video', 
+								array(
+									'VID_SOURCE' => $playlistSource,
+									'VID_NAME' => $name,
+									'VID_URL' => $v,
+									'VID_THUMBTYPE' => $thumbType,
+									'VID_QUALITY' => $quality,
+									'VID_CHROME' => $chrome,
+									'VID_UPDATEDATE' => $time,
+									'ALB_ID' => $key
+								)
+							);
+							
+							$addedcount++;
+							
+						}
 						
 					}
+					
+					if($wpdb->update(
+						$wpdb->prefix . 'utubevideo_album', 
+						array( 
+							'ALB_VIDCOUNT' => $album[0]['ALB_VIDCOUNT'] + $addedcount
+						), 
+						array('ALB_ID' => $key)
+					) >= 0)
+						echo '<div class="updated"><p>' . __('Playlist added to album', 'utvg') . '</p></div>';
 					else
-						echo '<div class="error e-message"><p>' . __('Oops... The Youtube Api seems to be down. Try again later.', 'utvg') . '</p></div>';
-						
+						echo '<div class="error e-message"><p>' . __('Oops... something went wrong', 'utvg') . '</p></div>';
+
 				}
 		
 			}
@@ -1945,14 +1840,14 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_album'))
 				{
 				
-					$alname = htmlentities($_POST['alname'], ENT_QUOTES, 'UTF-8');
-					$vidsort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');	
+					$albumName = sanitize_text_field($_POST['alname']);
+					$videoSort = ($_POST['vidSort'] == 'desc' ? 'desc' : 'asc');	
 					$thumb = (isset($_POST['albumThumbSelect']) ? $_POST['albumThumbSelect'] : 'missing');
-					$prevslug = $_POST['prevSlug'];
-					$slug = $_POST['slug'];
-					$key = sanitize_text_field($_POST['key']);
+					$prevSlug = sanitize_text_field($_POST['prevSlug']);
+					$slug = sanitize_text_field($_POST['slug']);
+					$key = sanitize_key($_POST['key']);
 					
-					if(empty($alname) || empty($vidsort) || empty($thumb) || empty($prevslug) || empty($slug) || !isset($key))
+					if(empty($albumName) || empty($videoSort) || empty($thumb) || empty($prevSlug) || empty($slug) || !isset($key))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
@@ -1960,37 +1855,22 @@ class utvAdmin
 						
 					}
 					
-					
-					if($slug != $prevslug)
+					if($slug != $prevSlug)
 					{
 					
-						$rawslugs = $wpdb->get_results('SELECT ALB_SLUG FROM ' . $wpdb->prefix . 'utubevideo_album', ARRAY_N);
-						
-						foreach($rawslugs as $item)
-							$sluglist[] = $item[0];
+						require_once 'class/utvAdminGen.class.php';
+						$utvAdminGen = new utvAdminGen($this->_options);
+						$slug = $utvAdminGen->generateSlug($albumName, $wpdb);
 							
-						$mark = 1;
-						$slug = strtolower($slug);
-						$slug = str_replace(' ', '-', $slug);
-						$slug = html_entity_decode($slug, ENT_QUOTES);
-						$slug = preg_replace("/[^a-zA-Z0-9-]+/", "", $slug); 
-						
-						if(!empty($sluglist))
-						{
-						
-							$this->checkslug($slug, $sluglist, $mark);
-							
-						}
-					
 					}
 					
 					if($wpdb->update(
 						$wpdb->prefix . 'utubevideo_album', 
 						array( 
-							'ALB_NAME' => $alname,
+							'ALB_NAME' => $albumName,
 							'ALB_SLUG' => $slug,
 							'ALB_THUMB' => $thumb,
-							'ALB_SORT' => $vidsort
+							'ALB_SORT' => $videoSort
 						), 
 						array('ALB_ID' => $key)
 					) >= 0)
@@ -2008,13 +1888,13 @@ class utvAdmin
 				if(check_admin_referer('utubevideo_edit_video'))
 				{
 				
-					$vidname = htmlentities($_POST['vidname'], ENT_QUOTES, 'UTF-8');
-					$thumbType = htmlentities($_POST['thumbType'], ENT_QUOTES, 'UTF-8');
-					$quality = htmlentities($_POST['videoQuality'], ENT_QUOTES, 'UTF-8');
+					$videoName = sanitize_text_field($_POST['vidname']);
+					$thumbType = sanitize_text_field($_POST['thumbType']);
+					$quality = sanitize_text_field($_POST['videoQuality']);
 					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
-					$key = sanitize_text_field($_POST['key']);
+					$key = sanitize_key($_POST['key']);
 					
-					if(empty($vidname) || empty($thumbType) || empty($quality) || !isset($chrome) || !isset($key))
+					if(empty($videoName) || empty($thumbType) || empty($quality) || !isset($chrome) || !isset($key))
 					{
 					
 						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
@@ -2022,39 +1902,37 @@ class utvAdmin
 						
 					}
 					
-					$dir = wp_upload_dir();
-					$dir = $dir['basedir'];
-					
-					$video = $wpdb->get_results('SELECT VID_URL, ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
+					$video = $wpdb->get_results('SELECT VID_SOURCE, VID_URL, VID_THUMBTYPE, ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_video WHERE VID_ID = ' . $key, ARRAY_A);
 					
 					$album = $wpdb->get_results('SELECT DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $video[0]['ALB_ID'], ARRAY_A);
 					
-					$gallery = $wpdb->get_results('SELECT DATA_THUMBWIDTH FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $album[0]['DATA_ID'], ARRAY_A);
-					$thumbwidth = $gallery[0]['DATA_THUMBWIDTH'];
-					
-					$yurl = 'http://img.youtube.com/vi/' . $video[0]['VID_URL'] . '/0.jpg';
-
-					//save image for video into cache//
-					$image = wp_get_image_editor($yurl);
-
-					$spath = $dir . '/utubevideo-cache/' . $video[0]['VID_URL'] . '.jpg';
-					
-					if(!is_wp_error($image))
+					if($thumbType != $video[0]['VID_THUMBTYPE'])
 					{
-				
-						if($thumbType == 'square')
-							$image->resize($thumbwidth, $thumbwidth, true);
-						else
-							$image->resize($thumbwidth, $thumbwidth);
 
-						$image->save($spath);
+						require_once 'class/utvAdminGen.class.php';
+						$utvAdminGen = new utvAdminGen($this->_options);
+						$utvAdminGen->setPath();
+						
+						if($video[0]['VID_SOURCE'] == 'youtube'){
 					
-					}	
+							$sourceURL = 'http://img.youtube.com/vi/' . $video[0]['VID_URL'] . '/0.jpg';
+					
+						}elseif($video[0]['VID_SOURCE'] == 'vimeo'){
+						
+							$data = $utvAdminGen->queryAPI('https://vimeo.com/api/v2/video/' . $video[0]['VID_URL'] . '.json');
+							$sourceURL = $data[0]['thumbnail_large'];
+		
+						}
+
+						if(!$utvAdminGen->saveThumbnail($sourceURL, $video[0]['VID_URL'], $thumbType))
+							return;
+						
+					}
 					
 					if($wpdb->update(
 						$wpdb->prefix . 'utubevideo_video', 
 						array( 
-							'VID_NAME' => $vidname, 
+							'VID_NAME' => $videoName, 
 							'VID_THUMBTYPE' => $thumbType,
 							'VID_QUALITY' => $quality,
 							'VID_CHROME' => $chrome
@@ -2083,23 +1961,6 @@ class utvAdmin
 			
 		}
 	
-	}
-	
-	//recursive function for making sure slugs are unique
-	private function checkslug(&$slug, &$sluglist, &$mark)
-	{
-		
-		if(in_array($slug, $sluglist))
-		{
-					
-			$slug = $slug . '-' . $mark;
-			$mark++;
-			$this->checkslug($slug, $sluglist, $mark);
-						
-		}
-		else
-			return;
-		
 	}
 			
 }
