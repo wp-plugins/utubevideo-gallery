@@ -1,0 +1,651 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2014-11-07 22:36-0500\n"
+"PO-Revision-Date: 2014-11-07 22:36-0500\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: admin.php:39
+msgid "uTubeVideo Galleries"
+msgstr ""
+
+#: admin.php:40 admin.php:1177
+msgid "Settings"
+msgstr ""
+
+#: admin.php:216
+msgid "Galleries"
+msgstr ""
+
+#: admin.php:298
+msgid "Are you sure you want to delete this album?"
+msgstr ""
+
+#: admin.php:360
+msgid "Create New Album"
+msgstr ""
+
+#: admin.php:361 admin.php:639
+msgid "Clear Sorting"
+msgstr ""
+
+#: admin.php:362 admin.php:426 admin.php:518 admin.php:640 admin.php:699
+#: admin.php:812 admin.php:893 admin.php:969 admin.php:1073
+#: class/utvVideoGen.class.php:104
+msgid "Go Back"
+msgstr ""
+
+#: admin.php:365
+msgid "Video Albums for Gallery"
+msgstr ""
+
+#: admin.php:366
+msgid "albums"
+msgstr ""
+
+#: admin.php:401
+msgid "Create Gallery"
+msgstr ""
+
+#: admin.php:403 admin.php:463
+msgid "Gallery Name:"
+msgstr ""
+
+#: admin.php:405
+msgid "ex: name of gallery for your reference"
+msgstr ""
+
+#: admin.php:408 admin.php:468
+msgid "Album Sorting:"
+msgstr ""
+
+#: admin.php:410 admin.php:473 admin.php:690 admin.php:758
+msgid "Top to Bottom"
+msgstr ""
+
+#: admin.php:411 admin.php:473 admin.php:691 admin.php:758
+msgid "Bottom to Top"
+msgstr ""
+
+#: admin.php:413 admin.php:488
+msgid "ex: the order that albums will be displayed"
+msgstr ""
+
+#: admin.php:416 admin.php:491
+msgid "Display Type:"
+msgstr ""
+
+#: admin.php:418 admin.php:496 class/utvVideoGen.class.php:89
+#: class/utvVideoGen.class.php:146
+msgid "Albums"
+msgstr ""
+
+#: admin.php:419 admin.php:496
+msgid "Just Videos"
+msgstr ""
+
+#: admin.php:421 admin.php:511
+msgid "ex: display albums or just videos in gallery"
+msgstr ""
+
+#: admin.php:424
+msgid "Save New Gallery"
+msgstr ""
+
+#: admin.php:461
+msgid "Edit Gallery"
+msgstr ""
+
+#: admin.php:465
+msgid "ex: name of gallery"
+msgstr ""
+
+#: admin.php:516 admin.php:810 admin.php:1071 admin.php:1363
+msgid "Save Changes"
+msgstr ""
+
+#: admin.php:568
+msgid "Are you sure you want to delete this video?"
+msgstr ""
+
+#: admin.php:637 class/utvAlbumListTable.class.php:189
+msgid "Add Video"
+msgstr ""
+
+#: admin.php:638 class/utvAlbumListTable.class.php:191
+msgid "Add Playlist"
+msgstr ""
+
+#: admin.php:643
+msgid "Videos for Album"
+msgstr ""
+
+#: admin.php:644
+msgid "videos"
+msgstr ""
+
+#: admin.php:681
+msgid "Create Video Album"
+msgstr ""
+
+#: admin.php:683 admin.php:743
+msgid "Album Name:"
+msgstr ""
+
+#: admin.php:685
+msgid "ex: name of video album"
+msgstr ""
+
+#: admin.php:688 admin.php:753
+msgid "Video Sorting:"
+msgstr ""
+
+#: admin.php:693 admin.php:773
+msgid "ex: the order that videos will be displayed"
+msgstr ""
+
+#: admin.php:696
+msgid "Save New Album"
+msgstr ""
+
+#: admin.php:738
+msgid "Edit Video Album"
+msgstr ""
+
+#: admin.php:745
+msgid "ex: name of album"
+msgstr ""
+
+#: admin.php:748
+msgid "Slug:"
+msgstr ""
+
+#: admin.php:750
+msgid "ex: permalink slug for album"
+msgstr ""
+
+#: admin.php:776
+msgid "Album Thumbnail:"
+msgstr ""
+
+#: admin.php:800
+msgid "Oops, you have not added any videos to this album yet"
+msgstr ""
+
+#: admin.php:805
+msgid "ex: choose the thumbnail for the album"
+msgstr ""
+
+#: admin.php:848
+msgid "Add New Video to"
+msgstr ""
+
+#: admin.php:850
+msgid "Video Source:"
+msgstr ""
+
+#: admin.php:855 admin.php:936
+msgid "ex: the source of the video"
+msgstr ""
+
+#: admin.php:858
+msgid "Video URL:"
+msgstr ""
+
+#: admin.php:860
+msgid "ex: video url"
+msgstr ""
+
+#: admin.php:863 admin.php:1014
+msgid "Video Name:"
+msgstr ""
+
+#: admin.php:865
+msgid "ex: the name for the video"
+msgstr ""
+
+#: admin.php:868 admin.php:944 admin.php:1019
+msgid "Thumbnail Type:"
+msgstr ""
+
+#: admin.php:873 admin.php:949 admin.php:1039
+msgid "ex: the type of thumbnail"
+msgstr ""
+
+#: admin.php:876 admin.php:952 admin.php:1042
+msgid "Video Quality:"
+msgstr ""
+
+#: admin.php:882
+msgid "ex: the starting quality of the video (applies only to YouTube)"
+msgstr ""
+
+#: admin.php:885 admin.php:961 admin.php:1065
+msgid "Chromeless Video:"
+msgstr ""
+
+#: admin.php:887 admin.php:963
+msgid "ex: hide the playback controls of the video (applies only to YouTube)"
+msgstr ""
+
+#: admin.php:891
+msgid "Save New Video"
+msgstr ""
+
+#: admin.php:929
+msgid "Add New Playlist to"
+msgstr ""
+
+#: admin.php:931
+msgid "Playlist Source:"
+msgstr ""
+
+#: admin.php:939
+msgid "Playlist URL:"
+msgstr ""
+
+#: admin.php:941
+msgid "ex: YouTube or Vimeo playlist url"
+msgstr ""
+
+#: admin.php:958
+msgid ""
+"ex: the starting quality of the playlist videos (applies only to YouTube)"
+msgstr ""
+
+#: admin.php:967
+msgid "Save New Playlist"
+msgstr ""
+
+#: admin.php:1009
+msgid "Edit Video"
+msgstr ""
+
+#: admin.php:1016
+msgid "ex: name of video"
+msgstr ""
+
+#: admin.php:1024
+msgid "Rectangle"
+msgstr ""
+
+#: admin.php:1024
+msgid "Square"
+msgstr ""
+
+#: admin.php:1062
+msgid "ex: the starting quality of the video"
+msgstr ""
+
+#: admin.php:1067
+msgid "ex: hide the playback controls of the video"
+msgstr ""
+
+#: admin.php:1100
+msgid "Are you sure you want to delete this gallery?"
+msgstr ""
+
+#: admin.php:1130
+msgid "Create New Gallery"
+msgstr ""
+
+#: admin.php:1142
+msgid "FAQ's"
+msgstr ""
+
+#: admin.php:1251
+msgid "Video Player Controls Theme:"
+msgstr ""
+
+#: admin.php:1256
+msgid "Dark"
+msgstr ""
+
+#: admin.php:1256
+msgid "Light"
+msgstr ""
+
+#: admin.php:1271
+msgid "ex: theme of the player's controls (if shown - YouTube only)"
+msgstr ""
+
+#: admin.php:1274
+msgid "Video Player Controlbar Color:"
+msgstr ""
+
+#: admin.php:1279
+msgid "Red"
+msgstr ""
+
+#: admin.php:1279
+msgid "White"
+msgstr ""
+
+#: admin.php:1294
+msgid "ex: color of the player's progress bar (YouTube only)"
+msgstr ""
+
+#: admin.php:1297
+msgid "Max Video Player Dimensions:"
+msgstr ""
+
+#: admin.php:1301 admin.php:1307 admin.php:1313 admin.php:1319 admin.php:1325
+#: admin.php:1331
+msgid "Reset"
+msgstr ""
+
+#: admin.php:1302
+msgid "ex: max dimensions of video player"
+msgstr ""
+
+#: admin.php:1305
+msgid "Thumbnail Width:"
+msgstr ""
+
+#: admin.php:1308
+msgid "ex: width of video thumbnails"
+msgstr ""
+
+#: admin.php:1311
+msgid "Thumbnail Padding:"
+msgstr ""
+
+#: admin.php:1314
+msgid "ex: padding for video thumbnails"
+msgstr ""
+
+#: admin.php:1317
+msgid "Thumbnail Border Radius:"
+msgstr ""
+
+#: admin.php:1320
+msgid "ex: roundness of thumbnail corners, set to 0 to disable"
+msgstr ""
+
+#: admin.php:1323
+msgid "Overlay Color:"
+msgstr ""
+
+#: admin.php:1326
+msgid "ex: color of lightbox overlay, any hex color"
+msgstr ""
+
+#: admin.php:1329
+msgid "Overlay Opacity:"
+msgstr ""
+
+#: admin.php:1332
+msgid "ex: opacity of lightbox overlay [ 0 - 1.0 ]"
+msgstr ""
+
+#: admin.php:1335
+msgid "Remove Magnific Popup Scripts:"
+msgstr ""
+
+#: admin.php:1337
+msgid ""
+"ex: check only if you are already loading the Magnific Popup scripts "
+"elsewhere"
+msgstr ""
+
+#: admin.php:1340
+msgid "Do not use permalinks:"
+msgstr ""
+
+#: admin.php:1342
+msgid "ex: check to use \"?aid=\" for album links instead of permalinks"
+msgstr ""
+
+#: admin.php:1349
+msgid "Ok"
+msgstr ""
+
+#: admin.php:1352
+msgid "Permalinks are not enabled, please enable permalinks for site"
+msgstr ""
+
+#: admin.php:1354
+msgid "Rewrite rules not set, please disable and re-enable plugin to fix"
+msgstr ""
+
+#: admin.php:1358
+msgid "Permalink Status:"
+msgstr ""
+
+#: admin.php:1360
+msgid "ex: permalink status check"
+msgstr ""
+
+#: admin.php:1419
+msgid "Oops... thumbnail width, padding, and radius must contain only numbers."
+msgstr ""
+
+#: admin.php:1455
+msgid "Oops... something went wrong or there were no changes needed"
+msgstr ""
+
+#: admin.php:1475 admin.php:1511 admin.php:1547 admin.php:1682 admin.php:1853
+#: admin.php:1900
+msgid "Oops... all form fields must have a value"
+msgstr ""
+
+#: admin.php:1489
+msgid "Gallery created"
+msgstr ""
+
+#: admin.php:1491 admin.php:1527 admin.php:1579 admin.php:1831 admin.php:1879
+#: admin.php:1944
+msgid "Oops... something went wrong"
+msgstr ""
+
+#: admin.php:1525
+msgid "Gallery updated"
+msgstr ""
+
+#: admin.php:1577
+msgid "Video album created"
+msgstr ""
+
+#: admin.php:1603
+msgid "Oops... all form fields must have a value."
+msgstr ""
+
+#: admin.php:1618 admin.php:1704 admin.php:1768
+msgid "Invalid URL."
+msgstr ""
+
+#: admin.php:1657
+msgid "Video added to album."
+msgstr ""
+
+#: admin.php:1659
+msgid "Oops... something went wrong. Try again."
+msgstr ""
+
+#: admin.php:1829
+msgid "Playlist added to album"
+msgstr ""
+
+#: admin.php:1877
+msgid "Video album updated"
+msgstr ""
+
+#: admin.php:1942
+msgid "Video updated"
+msgstr ""
+
+#: admin.php:1958
+msgid "Permalinks updated"
+msgstr ""
+
+#: class/utvAdminGen.class.php:64
+msgid "Oops... there seems to be a problem querying the appropriate API."
+msgstr ""
+
+#: class/utvAdminGen.class.php:296
+msgid ""
+"Oops... there seems to be a problem saving the video(s) thumbnail. Most "
+"likely you need to install a PHP image processing library, such as GD or "
+"Imagick. Please send the following information to the developer if the "
+"problem persists."
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:31 class/utvVideoListTable.class.php:31
+msgid "Thumbnail"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:32 class/utvGalleryListTable.class.php:25
+#: class/utvVideoListTable.class.php:32
+msgid "Name"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:33 class/utvVideoListTable.class.php:33
+msgid "Published"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:34 class/utvGalleryListTable.class.php:27
+#: class/utvVideoListTable.class.php:34
+msgid "Date Added"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:35
+msgid "# Videos"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:120 class/utvAlbumListTable.class.php:187
+#: class/utvGalleryListTable.class.php:107
+#: class/utvGalleryListTable.class.php:168
+#: class/utvVideoListTable.class.php:117 class/utvVideoListTable.class.php:187
+msgid "Delete"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:121 class/utvVideoListTable.class.php:118
+msgid "Publish"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:122 class/utvVideoListTable.class.php:119
+msgid "Unpublish"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:165
+msgid "No albums found"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:182 class/utvAlbumListTable.class.php:183
+#: class/utvAlbumListTable.class.php:193
+#: class/utvGalleryListTable.class.php:164
+#: class/utvGalleryListTable.class.php:170
+msgid "View"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:185
+#: class/utvGalleryListTable.class.php:166
+#: class/utvVideoListTable.class.php:185
+msgid "Edit this item"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:185
+#: class/utvGalleryListTable.class.php:166
+#: class/utvVideoListTable.class.php:185
+msgid "Edit"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:187
+#: class/utvGalleryListTable.class.php:168
+#: class/utvVideoListTable.class.php:187
+msgid "Delete this item"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:189
+msgid "Add video to this album"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:191
+msgid "Add playlist to this album"
+msgstr ""
+
+#: class/utvAlbumListTable.class.php:195 class/utvVideoListTable.class.php:190
+msgid "Click to toggle"
+msgstr ""
+
+#: class/utvGalleryListTable.class.php:26
+msgid "Shortcode"
+msgstr ""
+
+#: class/utvGalleryListTable.class.php:28
+msgid "# Albums"
+msgstr ""
+
+#: class/utvGalleryListTable.class.php:147
+msgid "No galleries found"
+msgstr ""
+
+#: class/utvVideoGen.class.php:106
+msgid "Sorry... there appear to be no videos for this album yet."
+msgstr ""
+
+#: class/utvVideoGen.class.php:169
+msgid "Sorry... there appear to be no video albums yet."
+msgstr ""
+
+#: class/utvVideoListTable.class.php:162
+msgid "No videos found"
+msgstr ""
+
+#: class/utvVideoListTable.class.php:179 class/utvVideoListTable.class.php:188
+msgid "Watch On YouTube"
+msgstr ""
+
+#: class/utvVideoListTable.class.php:179 class/utvVideoListTable.class.php:188
+msgid "Watch On Vimeo"
+msgstr ""
+
+#: class/utvVideoListTable.class.php:188
+msgid "Watch"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:183
+msgid "No items found."
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:307
+msgid "Bulk Actions"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:317
+msgid "Apply"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:401
+msgid "All dates"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:414
+#, php-format
+msgid "%1$s %2$d"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:430
+msgid "List View"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:431
+msgid "Excerpt View"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:457
+#, php-format
+msgid "%s pending"
+msgstr ""
+
+#: class/utvWPListTableBase.class.php:712
+msgid "Select All"
+msgstr ""
