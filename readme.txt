@@ -113,7 +113,6 @@ A user must be an editor or above in order to manage video galleries and change 
 * Improved localization
 * Added bulk managment options
 * Better error checking
-* Removed HD features for YouTube as YouTube now auto adapts resolution based on player size
 * Updated Magnific Popup to version 0.9.9 (Dimsemenov)
 * And other tweaks and fixes
 
