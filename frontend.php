@@ -145,8 +145,8 @@ class utvFrontend
 		
 		//load jquery and lightbox js / css
 		wp_enqueue_script('jquery');	
-		wp_enqueue_script('js', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.9/jquery.magnific-popup.min.js', array('jquery'), null, true);
-		wp_enqueue_style('css', '//cdn.jsdelivr.net/jquery.magnific-popup/0.9.9/magnific-popup.css', false, null);
+		wp_enqueue_script('js', '//cdn.jsdelivr.net/jquery.magnific-popup/1.0.0/jquery.magnific-popup.min.js', array('jquery'), null, true);
+		wp_enqueue_style('css', '//cdn.jsdelivr.net/jquery.magnific-popup/1.0.0/magnific-popup.css', false, null);
 	
 	}
 		

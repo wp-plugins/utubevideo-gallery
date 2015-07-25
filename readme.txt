@@ -4,7 +4,7 @@ Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube, vimeo
 Requires at least: 3.0.1
 Tested up to: 4.0
-Stable tag: 1.7
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ Features Include:
 - Set progress bar color of video player
 - Set starting resolution of videos (480p, 720p, or 1080p)
 - Order video albums by newest or oldest videos first, as well as custom re-ordering of videos / albums
-- Possiblity of skipping video albums and just display videos
+- Possibility of skipping video albums and just display videos
 - Set video thumbnails as either square or rectangle
 - View counts of video albums and videos within a gallery in the backend
 - Add YouTube playlists to an album
@@ -75,13 +75,9 @@ After adding at least one video to the album click on the edit link for the vide
 
 There is an option called Display Type in each gallery's settings; set it to Just Videos.
 
-= How big of a playlist can I add to an album at a time? =
+= How big of a playlist can I add to an album at once? =
 
 Do to programming constraints and such it seems around 80 videos is the limit, but you will have to experiment to find what works best for you.
-
-= What should I do if my thumbnails are not displaying? =
-
-If your thumbnails are not displaying or if you are getting a image editor error you can check the "Load Thumbnails from YouTube" in the settings to load thumbnails directly from YouTube. However all thumbnails will be rectangular when using this option; square thumbnails will be ignored.
 
 = What if my Permalink Status is NOT Ok? = 
 
@@ -100,6 +96,14 @@ A user must be an editor or above in order to manage video galleries and change 
 5. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.7.1 =
+
+* Updated Magnific Popup to version 1.0.0 (Dimsemenov)
+* Changed Youtube playlists to use API version 3 to fix playlist features
+* Added ability to use youtu.be link format to add videos
+* Fixed video sorting issues
+* Made video name field optional
 
 = 1.7 =
 

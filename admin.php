@@ -636,7 +636,7 @@ class utvAdmin
 						<p class="submit utv-actionbar">
 							<a href="?page=utubevideo&view=videoadd&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-link-submit-button"><?php _e('Add Video', 'utvg'); ?></a>
 							<a href="?page=utubevideo&view=playlistadd&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-link-submit-button"><?php _e('Add Playlist', 'utvg'); ?></a>						
-							<a href="?page=utubevideo&view=album&id=<?php echo $id; ?>" class="utv-ok"><?php _e('Clear Sorting', 'utvg'); ?></a>
+							<a href="?page=utubevideo&view=album&id=<?php echo $id; ?>&pid=<?php echo $pid; ?>" class="utv-ok"><?php _e('Clear Sorting', 'utvg'); ?></a>
 							<a href="?page=utubevideo&view=gallery&id=<?php echo $pid; ?>" class="utv-cancel"><?php _e('Go Back', 'utvg'); ?></a>
 						</p>
 					</form>
@@ -861,7 +861,7 @@ class utvAdmin
 						</p>		
 						<p>
 							<label><?php _e('Video Name:', 'utvg'); ?></label>
-							<input type="text" name="vidname" class="utv-required"/>
+							<input type="text" name="vidname"/>
 							<span class="utv-hint"><?php _e('ex: the name for the video', 'utvg'); ?></span>
 						</p>
 						<p>
@@ -1012,7 +1012,7 @@ class utvAdmin
 						</p>
 						<p>
 							<label><?php _e('Video Name:', 'utvg'); ?></label>
-							<input type="text" name="vidname" class="utv-required" value="<?php echo stripslashes($rows[0]['VID_NAME']); ?>"/>
+							<input type="text" name="vidname" value="<?php echo stripslashes($rows[0]['VID_NAME']); ?>"/>
 							<span class="utv-hint"><?php _e('ex: name of video', 'utvg'); ?></span>
 						</p>
 						<p>
@@ -1248,6 +1248,11 @@ class utvAdmin
 			<form method="post">  
 				<h3>General Settings</h3>					
 				<p>
+					<label><?php _e('Youtube API Key:', 'utvg'); ?></label>
+					<input type="text" name="youtubeApiKey" id="youtubeApiKey" value="<?php echo $this->_options['youtubeApiKey']; ?>"/>
+					<span class="utv-hint"><?php _e('ex: your Youtube API key', 'utvg'); ?></span>
+				</p>
+				<p>
 					<label><?php _e('Video Player Controls Theme:', 'utvg'); ?></label>
 					<select name="playerControlTheme">
 						
@@ -1397,6 +1402,7 @@ class utvAdmin
 					$opts['thumbnailWidth'] = (isset($_POST['thumbnailWidth']) ? sanitize_text_field($_POST['thumbnailWidth']) : '150');
 					$opts['thumbnailPadding'] = (isset($_POST['thumbnailPadding']) ? sanitize_text_field($_POST['thumbnailPadding']) : '10');
 					$opts['thumbnailBorderRadius'] = (isset($_POST['thumbnailBorderRadius']) ? sanitize_text_field($_POST['thumbnailBorderRadius']) : '3');
+					$opts['youtubeApiKey'] = (isset($_POST['youtubeApiKey']) ? sanitize_text_field($_POST['youtubeApiKey']) : '');
 						
 					if(!empty($_POST['playerWidth']) && !empty($_POST['playerHeight']))
 					{
@@ -1597,17 +1603,19 @@ class utvAdmin
 					$key = sanitize_key($_POST['key']);
 					$time = current_time('timestamp');
 					
-					if(empty($url) || empty($videoName) || empty($thumbType) || empty($quality) || !isset($chrome) || empty($videoSource) || !isset($key))
+					if(empty($url) || empty($thumbType) || empty($quality) || !isset($chrome) || empty($videoSource) || !isset($key))
 					{
 					
-						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value.', 'utvg') . '</p></div>';
+						echo '<div class="error e-message"><p>' . __('Oops... all required fields must have a value.', 'utvg') . '</p></div>';
 						return;
 						
 					}
 					
 					//get current video count for album//
 					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT, DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+					$video = $wpdb->get_results('SELECT VID_POS FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key . ' ORDER BY VID_POS DESC LIMIT 1', ARRAY_A);
 					$vidcnt = $album[0]['ALB_VIDCOUNT'] + 1;
+					$nextSortPos = $video[0]['VID_POS'] + 1;
 					
 					require_once 'class/utvAdminGen.class.php';
 					$utvAdminGen = new utvAdminGen($this->_options);
@@ -1644,6 +1652,7 @@ class utvAdmin
 							'VID_THUMBTYPE' => $thumbType,
 							'VID_QUALITY' => $quality,
 							'VID_CHROME' => $chrome,
+							'VID_POS' => $nextSortPos,
 							'VID_UPDATEDATE' => $time,
 							'ALB_ID' => $key
 						)
@@ -1690,14 +1699,21 @@ class utvAdmin
 					
 					//get current video count for album//
 					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
+					$video = $wpdb->get_results('SELECT VID_POS FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key . ' ORDER BY VID_POS DESC LIMIT 1', ARRAY_A);
 					$addedcount = 0;
+					$nextSortPos = $video[0]['VID_POS'] + 1;
 					
 					if($playlistSource == 'youtube')
 					{
 					
-						$pos = 51;
-						$blockedVideos = array('private', 'blocked', 'suspended', 'requesterRegion');
-
+						//check for a possibly valid api key before continuing
+						if($this->_options['youtubeApiKey'] == ''){
+							
+							echo '<div class="error e-message"><p>' . __('You must have a valid API key set in the settings menu.', 'utvg') . '</p></div>';
+							return;
+							
+						}
+					
 						//parse video url to get video id//
 						if(!$listID = $utvAdminGen->parseURL($url, $playlistSource, 'playlist')){
 						
@@ -1706,57 +1722,102 @@ class utvAdmin
 							
 						}
 						
-						if(!$data = $utvAdminGen->queryAPI('http://gdata.youtube.com/feeds/api/playlists/' . $listID . '?v=2&alt=json&max-results=50')) 
-							return;
+						//get base data from youtube api
+						$nextPageToken = true;
+						$baseData = array();
+						
+						while($nextPageToken == true){
 							
-						$totalVideos = $data['feed']['openSearch$totalResults']['$t'];
-						$data = $data['feed']['entry'];
-						
-						//more requests for data
-						while($totalVideos >= $pos)
-						{
-						
-							if(!$ndata = $utvAdminGen->queryAPI('http://gdata.youtube.com/feeds/api/playlists/' . $listID . '?v=2&alt=json&start-index=' . $pos . '&max-results=50'))
+							if(!$data = $utvAdminGen->queryAPI('https://www.googleapis.com/youtube/v3/playlistItems?key=' . $this->_options['youtubeApiKey'] . '&part=snippet,status,id,contentDetails&maxResults=50&playlistId=' . $listID . (strlen($nextPageToken) > 1 ? '&pageToken=' . $nextPageToken : ''))){
+								
+								echo '<div class="error e-message"><p>' . __('Oops... something went wrong. Try again.', 'utvg') . '</p></div>';
 								return;
-
-							$ndata = $ndata['feed']['entry'];
 							
-							$data = array_merge($data, $ndata);
-							$pos = $pos + 50;		
-						
+							}
+							
+							$baseData = array_merge($baseData, $data['items']);
+							
+							if(isset($data['nextPageToken']))
+								$nextPageToken = $data['nextPageToken'];
+							else
+								$nextPageToken = false;
+							
+						}
+				
+						//generate video id strings to get additonal details needed to filter out deleted and private videos
+						$videoIds = array();
+						$idString = '';
+						$idCount = 0;
+									
+						foreach($baseData as $item){
+							
+							$idString .= $item['snippet']['resourceId']['videoId'] . ',';
+							$idCount++;
+							
+							if($idCount == 50){
+								
+								array_push($videoIds, trim($idString, ','));
+								$idString = '';
+								$idCount = 0;
+								
+							}
+							
 						}
 						
-						foreach($data as $val)
+						if($idCount > 0)
+							array_push($videoIds, trim($idString, ','));
+						
+						$finalData = array();
+						
+						//get final video data to filter with
+						foreach($videoIds as $list){
+						
+							if(!$data = $utvAdminGen->queryAPI('https://www.googleapis.com/youtube/v3/videos?key=' . $this->_options['youtubeApiKey'] . '&part=contentDetails,snippet,status&id=' . $list)){
+								
+								echo '<div class="error e-message"><p>' . __('Oops... something went wrong. Try again.', 'utvg') . '</p></div>';
+								return;
+							
+							}
+							
+							$finalData = array_merge($finalData, $data['items']);
+								
+						}
+						
+						//filter video and if passed add it to album
+						foreach($finalData as $video)
 						{
 						
-							//check to make sure video is not deleted or private
-							if(isset($val['app$control']['yt$state']['reasonCode']) && !in_array($val['app$control']['yt$state']['reasonCode'], $blockedVideos) || isset($val['media$group']['yt$duration']['seconds']) && $val['media$group']['yt$duration']['seconds'] > 0)
+							if(isset($video['status']['uploadStatus']) && $video['status']['uploadStatus'] != 'rejected' && isset($video['status']['embeddable']) && $video['status']['embeddable'] == true)
 							{			
-
-								$name = $val['media$group']['media$title']['$t'];
-								$v = $val['media$group']['yt$videoid']['$t'];
-								$sourceURL = 'http://img.youtube.com/vi/' . $v . '/0.jpg';
+			
+								$name = $video['snippet']['title'];
+								$videoId = $video['id'];
+								$sourceURL = 'http://img.youtube.com/vi/' . $videoId . '/0.jpg';
 							
-								$utvAdminGen->saveThumbnail($sourceURL, $v, $thumbType, true);
-								
-								$wpdb->insert(
+								//if video insertion successful; save thumbnail and increment new video count++
+								if($wpdb->insert(
 									$wpdb->prefix . 'utubevideo_video', 
 									array(
 										'VID_SOURCE' => $playlistSource,
 										'VID_NAME' => $name,
-										'VID_URL' => $v,
+										'VID_URL' => $videoId,
 										'VID_THUMBTYPE' => $thumbType,
 										'VID_QUALITY' => $quality,
 										'VID_CHROME' => $chrome,
+										'VID_POS' => $nextSortPos,
 										'VID_UPDATEDATE' => $time,
 										'ALB_ID' => $key
 									)
-								);
-								
-								$addedcount++;
+								)){
+									
+									$utvAdminGen->saveThumbnail($sourceURL, $videoId, $thumbType, true);
+									$addedcount++;
+									$nextSortPos++;
+
+								}
 
 							}
-							
+
 						}
 						
 					}
@@ -1789,17 +1850,15 @@ class utvAdmin
 							$data = array_merge($data, $ndata);
 
 						}
-							
+						
 						foreach($data as $val)
 						{
 						
 							$name = $val['title'];
 							$v = $val['id'];
 							$sourceURL = $val['thumbnail_large'];
-							
-							$utvAdminGen->saveThumbnail($sourceURL, $v, $thumbType, true);
 								
-							$wpdb->insert(
+							if($wpdb->insert(
 								$wpdb->prefix . 'utubevideo_video', 
 								array(
 									'VID_SOURCE' => $playlistSource,
@@ -1808,12 +1867,17 @@ class utvAdmin
 									'VID_THUMBTYPE' => $thumbType,
 									'VID_QUALITY' => $quality,
 									'VID_CHROME' => $chrome,
+									'VID_POS' => $nextSortPos,
 									'VID_UPDATEDATE' => $time,
 									'ALB_ID' => $key
 								)
-							);
-							
-							$addedcount++;
+							)){
+								
+								$utvAdminGen->saveThumbnail($sourceURL, $v, $thumbType, true);
+								$addedcount++;
+								$nextSortPos++;
+								
+							}
 							
 						}
 						
@@ -1894,10 +1958,10 @@ class utvAdmin
 					$chrome = isset($_POST['videoChrome']) ? 0 : 1;
 					$key = sanitize_key($_POST['key']);
 					
-					if(empty($videoName) || empty($thumbType) || empty($quality) || !isset($chrome) || !isset($key))
+					if(empty($thumbType) || empty($quality) || !isset($chrome) || !isset($key))
 					{
 					
-						echo '<div class="error e-message"><p>' . __('Oops... all form fields must have a value', 'utvg') . '</p></div>';
+						echo '<div class="error e-message"><p>' . __('Oops... all required fields must have a value', 'utvg') . '</p></div>';
 						return;
 						
 					}

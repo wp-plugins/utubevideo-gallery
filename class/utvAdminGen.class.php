@@ -60,7 +60,7 @@ class utvAdminGen
 		$data = wp_remote_get($query);
 		
 		if($data['response']['code'] != 200){
-		
+			
 			echo '<div class="error"><p>' . __('Oops... there seems to be a problem querying the appropriate API.') . '</p></div>';
 			return false;
 		}
@@ -78,17 +78,23 @@ class utvAdminGen
 		
 			if($type == 'video'){
 			
-				$url = parse_url($url);
+				if(preg_match('/youtu.be\/([0-9A-Za-z]+)/', $url, $matches))
+					$id = $matches[1];
+				else{
+					
+					$url = parse_url($url);
 				
-				if(isset($url['query'])){
-				
-					parse_str($url['query'], $querystr);
-				
-					if(isset($querystr['v']))
-						$id = $querystr['v'];
-						
+					if(isset($url['query'])){
+					
+						parse_str($url['query'], $querystr);
+					
+						if(isset($querystr['v']))
+							$id = $querystr['v'];
+							
+					}
+					
 				}
-			
+				
 			}elseif($type == 'playlist'){
 			
 				$url = parse_url($url);

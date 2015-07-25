@@ -1,10 +1,9 @@
 <?php 
-
 /*
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.7
+Version: 1.7.1
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -33,7 +32,7 @@ if(!class_exists('utvGallery'))
 	{
 	
 		private $_utvadmin, $_utvfrontend, $_options;
-		const CURRENT_VERSION = '1.7';
+		const CURRENT_VERSION = '1.7.1';
 	
 		public function __construct()
 		{
@@ -151,7 +150,7 @@ if(!class_exists('utvGallery'))
 			CREATE TABLE $tbname[2] (
 				VID_ID int(11) NOT NULL AUTO_INCREMENT,
 				VID_SOURCE varchar(15) DEFAULT 'youtube' NOT NULL,
-				VID_NAME varchar(50) NOT NULL,
+				VID_NAME varchar(90) NOT NULL,
 				VID_URL varchar(40) NOT NULL,
 				VID_THUMBTYPE varchar(9) DEFAULT 'rectangle' NOT NULL,
 				VID_QUALITY varchar(6) DEFAULT 'large' NOT NULL,
@@ -213,6 +212,38 @@ if(!class_exists('utvGallery'))
 			
 			}
 			
+			//fix video sorting if not done yet
+			if(!isset($this->_options['sortFix']))
+			{
+				
+				$albumIds = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album', ARRAY_A);
+				
+				foreach($albumIds as $value)
+				{
+					
+					$videoIds = $wpdb->get_results('SELECT VID_ID FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $value['ALB_ID'] . ' ORDER BY VID_POS', ARRAY_A);
+					$posCounter = 0;
+					
+					foreach($videoIds as $video)
+					{
+						
+						$wpdb->update($wpdb->prefix . 'utubevideo_video', 
+							array( 
+								'VID_POS' => $posCounter
+							), 
+							array('VID_ID' => $video['VID_ID'])
+						);
+						
+						$posCounter++;
+						
+					}
+					
+				}
+				
+				$dft['sortFix'] = 'ok';
+				
+			}
+			
 			//set slugs if not set yet
 			if(!isset($this->_options['setSlugs']))
 			{
@@ -264,6 +295,7 @@ if(!class_exists('utvGallery'))
 			$dft['thumbnailWidth'] = 150;
 			$dft['thumbnailPadding'] = 10;
 			$dft['thumbnailBorderRadius'] = 3;
+			$dft['youtubeApiKey'] = '';
 			$dft['version'] = self::CURRENT_VERSION;
 			
 			$this->_options = $this->_options + $dft;
