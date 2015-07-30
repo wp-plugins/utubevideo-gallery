@@ -101,7 +101,7 @@ class utvFrontend
 						items: {src: url},
 						type: 'iframe',
 						iframe: {
-							patterns: false,
+							patterns: new Array(),
 							markup: '<div class="utv-mfp-iframe-scaler mfp-iframe-scaler">'+
 								'<div class="mfp-close"></div>'+
 								'<iframe class="mfp-iframe" frameborder="0" width="<?php echo $this->_options['playerWidth']; ?>" height="<?php echo $this->_options['playerHeight']; ?>" allowfullscreen></iframe>'+

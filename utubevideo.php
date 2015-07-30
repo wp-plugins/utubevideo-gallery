@@ -3,7 +3,7 @@
 Plugin Name: uTubeVideo Gallery	
 Plugin URI: http://www.codeclouds.net/
 Description: This plugin allows you to create YouTube video galleries to embed in a WordPress site.
-Version: 1.7.1
+Version: 1.7.2
 Author: Dustin Scarberry
 Author URI: http://www.codeclouds.net/
 License: GPL2
@@ -140,7 +140,7 @@ if(!class_exists('utvGallery'))
 				ALB_SLUG varchar(50) DEFAULT '--empty--' NOT NULL,
 				ALB_THUMB varchar(40) NOT NULL,
 				ALB_SORT varchar(4) DEFAULT 'desc' NOT NULL,
-				ALB_POS int(11) DEFAULT '0' NOT NULL,
+				ALB_POS int(11) NOT NULL,
 				ALB_PUBLISH int(11) DEFAULT 1 NOT NULL,
 				ALB_UPDATEDATE int(11) NOT NULL,
 				ALB_VIDCOUNT int(4) DEFAULT '0' NOT NULL,
@@ -241,6 +241,38 @@ if(!class_exists('utvGallery'))
 				}
 				
 				$dft['sortFix'] = 'ok';
+				
+			}
+			
+			//album sort fix
+			if(!isset($this->_options['albumSortFix']))
+			{
+				
+				$galleryIds = $wpdb->get_results('SELECT DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_dataset', ARRAY_A);
+				
+				foreach($galleryIds as $value)
+				{
+					
+					$albumIds = $wpdb->get_results('SELECT ALB_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE DATA_ID = ' . $value['DATA_ID'] . ' ORDER BY ALB_POS', ARRAY_A);
+					$posCounter = 0;
+									
+					foreach($albumIds as $album)
+					{
+						
+						$wpdb->update($wpdb->prefix . 'utubevideo_album',
+							array(
+								'ALB_POS' => $posCounter
+							),
+							array('ALB_ID' => $album['ALB_ID'])
+						);
+
+						$posCounter++;
+						
+					}
+
+				}
+				
+				$dft['albumSortFix'] = 'ok';
 				
 			}
 			

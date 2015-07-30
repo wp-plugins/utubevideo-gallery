@@ -4,7 +4,7 @@ Donate link: http://www.codeclouds.net/utubevideo-gallery/
 Tags: video, gallery, youtube, vimeo
 Requires at least: 3.0.1
 Tested up to: 4.2.3
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,11 @@ A user must be an editor or above in order to manage video galleries and change 
 5. A listing of videos in the administration panel
 
 == Changelog ==
+
+= 1.7.2 =
+
+* Fixed an overlooked sorting issue with albums
+* Fixed an odd glitch with newer versions of jQuery
 
 = 1.7.1 =
 

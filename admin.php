@@ -1561,6 +1561,7 @@ class utvAdmin
 					
 					//get current album count for gallery//
 					$gallery = $wpdb->get_results('SELECT DATA_ALBCOUNT FROM ' . $wpdb->prefix . 'utubevideo_dataset WHERE DATA_ID = ' . $key, ARRAY_A);
+					$nextSortPos = $gallery[0]['DATA_ALBCOUNT'];
 					$albcnt = $gallery[0]['DATA_ALBCOUNT'] + 1;
 					
 					if($wpdb->insert(
@@ -1571,6 +1572,7 @@ class utvAdmin
 							'ALB_THUMB' => 'missing',
 							'ALB_SORT' => $videoSort,
 							'ALB_UPDATEDATE' => $time,
+							'ALB_POS' => $nextSortPos,
 							'DATA_ID' => $key
 						)
 					) && $wpdb->update(
@@ -1613,9 +1615,8 @@ class utvAdmin
 					
 					//get current video count for album//
 					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT, DATA_ID FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-					$video = $wpdb->get_results('SELECT VID_POS FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key . ' ORDER BY VID_POS DESC LIMIT 1', ARRAY_A);
 					$vidcnt = $album[0]['ALB_VIDCOUNT'] + 1;
-					$nextSortPos = $video[0]['VID_POS'] + 1;
+					$nextSortPos = $album[0]['ALB_VIDCOUNT'];
 					
 					require_once 'class/utvAdminGen.class.php';
 					$utvAdminGen = new utvAdminGen($this->_options);
@@ -1699,9 +1700,8 @@ class utvAdmin
 					
 					//get current video count for album//
 					$album = $wpdb->get_results('SELECT ALB_VIDCOUNT FROM ' . $wpdb->prefix . 'utubevideo_album WHERE ALB_ID = ' . $key, ARRAY_A);
-					$video = $wpdb->get_results('SELECT VID_POS FROM ' . $wpdb->prefix . 'utubevideo_video WHERE ALB_ID = ' . $key . ' ORDER BY VID_POS DESC LIMIT 1', ARRAY_A);
 					$addedcount = 0;
-					$nextSortPos = $video[0]['VID_POS'] + 1;
+					$nextSortPos = $album[0]['ALB_VIDCOUNT'];
 					
 					if($playlistSource == 'youtube')
 					{
